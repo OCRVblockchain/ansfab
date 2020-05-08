@@ -1,0 +1,154 @@
+- hosts: nodes
+  become: yes
+  connection: local
+  tasks:
+    - name: Clean local artifacts folder
+      file:
+        path: "{{ fabric_artifacts }}"
+        state: "{{ item }}"
+      loop:
+        - "absent"
+        - "directory"
+      ignore_errors: true
+
+    - name: Clean all previous dockers, if any
+      raw: "docker rm -f $(docker ps -a | grep {{ global_domain }} | awk '{print $1};')"
+      ignore_errors: true
+
+    - name: Clean all docker volumes
+      raw: "docker volume rm $(docker volume ls -qf dangling=true)"
+      ignore_errors: true
+
+    - name: Clean all chaincode images
+      raw: "docker image rm $(docker image ls | grep {{ global_domain }} | awk '{print $1};')"
+      ignore_errors: true
+
+    - name: Clean all config folders
+      become: true
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ fabric_starter_workdir }}"
+
+    - name: Ensure all folders exist
+      file:
+        dest: "{{ item }}"
+        state: directory
+      loop: "{{ fabric_artifacts_folders }}"
+
+    - name: Configure CA
+      block:
+
+        - name: Transfer CA configuration files
+          template:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+          loop: "{{ ca_templates }}"
+
+        - name: Start CA container
+          become: true
+          raw: "docker-compose --file {{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml up -d && sleep 12"
+
+        - name: Copy artifacts from CA
+          become: true
+          raw: "docker cp ca.{{ org }}.{{ global_domain }}:/etc/hyperledger/fabric-ca-server {{ ca_dir }}"
+
+        ###########################
+        ### Register identities ###
+        ###########################
+
+        - name: Enroll the CA admin
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Sleep 10s
+          raw: "sleep 10"
+
+        - name: Register the org admin
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Register peer0
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name peer0 --id.secret peerpw --id.type peer -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Register orderer
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name orderer --id.secret ordererpw --id.type orderer -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        ###########################
+        #### Enroll identities ####
+        ###########################
+
+        - name: Enroll the org admin
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://{{ org }}admin:adminpw@localhost:7054 -M {{ admin_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Enroll the peer0
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 -M {{ peer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Enroll the peer0 TLS
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --enrollment.profile tls -M {{ peer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Sleep 5s
+          raw: "sleep 5"
+
+        - name: Prepare TLS folders (step 1)
+          raw: "cp {{ peer_dir }}/tls/tlscacerts/*.pem {{ peer_dir }}/tls/ca.crt &&
+                cp {{ peer_dir }}/tls/keystore/* {{ peer_dir }}/tls/server.key &&
+                cp {{ peer_dir }}/tls/signcerts/*.pem {{ peer_dir }}/tls/server.crt"
+
+        - name: Prepare TLS folders (step 2)
+          raw: "mkdir {{ peer_org }}/msp/tlscacerts && cp {{ peer_dir }}/tls/tlscacerts/* {{ peer_org }}/msp/tlscacerts/ca.crt &&
+                mkdir {{ peer_org }}/tlsca && cp {{ peer_dir }}/tls/tlscacerts/* {{ peer_org }}/tlsca/tlsca.{{ org }}.{{ global_domain }}-cert.pem &&
+                mkdir {{ peer_org }}/ca && cp {{ peer_dir }}/msp/cacerts/* {{ peer_org }}/ca/ca.{{ org }}.{{ global_domain }}-cert.pem"
+
+        ###########################
+
+        - name: Enroll the CA admin
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Enroll the orderer
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Enroll the orderer TLS
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/tls --enrollment.profile tls -M {{ orderer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Sleep 5s
+          raw: "sleep 5"
+
+        - name: Prepare TLS folders (step 1)
+          raw: "cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_dir }}/tls/ca.crt &&
+                cp {{ orderer_dir }}/tls/keystore/* {{ orderer_dir }}/tls/server.key &&
+                cp {{ orderer_dir }}/tls/signcerts/*.pem {{ orderer_dir }}/tls/server.crt"
+
+        - name: Prepare TLS folders (step 2)
+          raw: "mkdir {{ orderer_dir }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_dir }}/msp/tlscacerts/tlsca.{{ global_domain }}-cert.pem &&
+                mkdir {{ orderer_org }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_org }}/msp/tlscacerts/tlsca.{{ global_domain }}-cert.pem"
+
+      when: "'ca' in node_roles"
+
+    - name: Configure orderer
+      block:
+
+        - name: Transfer orderer configuration files
+          template:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+          loop: "{{ orderer_templates }}"
+
+        - name: Generate genesis block
+          raw: "configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ fabric_starter_workdir }} -channelID initial -outputBlock {{ fabric_artifacts }}/channel/genesis.block"
+
+        - name: Generating channels config transactions, if any
+          raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputCreateChannelTx {{ fabric_artifacts }}/channel/{{ item.name }}.tx -channelID {{ item.name }}"
+          loop: "{{ global_channels }}"
+          when: "global_channels is defined"
+
+      when: "'ca' in node_roles"
+
+    - name: Generate anchor peers updates
+      block:
+
+        - name: Generating anchor peer updates for other channels, if defined
+          raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputAnchorPeersUpdate {{ fabric_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx -channelID {{ item.name }} -asOrg {{ org }}MSP"
+          loop: "{{ global_channels }}"
+          when: "global_channels is defined and org in item.particapants"
+
+      when: "'ca' in node_roles"

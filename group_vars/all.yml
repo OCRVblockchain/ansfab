@@ -1,0 +1,47 @@
+project_name: "ansfab"
+
+# Default HL fabric ports
+orderer_port: 7050
+api_port: 4000
+ca_port: 7054
+peer0_port: 7051
+
+fabric_starter_workdir: "$HOME/{{ ansible_user }}/{{ project_name }}"
+docker_artifacts: "{{ fabric_starter_workdir }}/dockercompose"
+fabric_artifacts: "{{ fabric_starter_workdir }}/artifacts"
+
+org_dir: "{{ fabric_starter_workdir }}/organizations"
+ca_dir: "{{ org_dir }}/ca"
+peer_org: "{{ org_dir }}/peerOrganizations/{{ org }}.{{ global_domain }}"
+orderer_org: "{{ org_dir }}/ordererOrganizations/{{ global_domain }}"
+
+orderer_dir: "{{ orderer_org }}/orderers/orderer{{ orderer_id | default() }}.{{ global_domain }}"
+peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ global_domain }}"
+
+admin_dir: "{{ peer_org }}/users/Admin@{{ org }}.{{ global_domain }}"
+registrar_peer: "{{ peer_org }}"
+registrar_orderer: "{{ orderer_org }}"
+
+
+#registrar_dir: "{{ peer_dir }}/users/admin"
+#registrar_tls_dir: "{{ peer_dir }}/users/admin_tls"
+
+
+# Folders to create for configs
+fabric_artifacts_folders:
+  - "{{ fabric_starter_workdir }}"
+  - "{{ docker_artifacts }}"
+  - "{{ fabric_artifacts }}"
+  - "{{ ca_dir }}"
+
+ca_templates:
+  - from: "fabric-ca-server-config-template.yaml"
+    to: "{{ ca_dir }}/fabric-ca-server-{{ org }}.yaml"
+  - from: "docker-compose-ca-template.yaml"
+    to: "{{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml"
+
+orderer_templates:
+  - from: "configtxtemplate.yaml"
+    to: "{{ fabric_starter_workdir }}/configtx.yaml"
+  - from: "docker-compose-orderer-template.yaml"
+    to: "{{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml"
