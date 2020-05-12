@@ -8,11 +8,22 @@
             export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
             export CORE_PEER_ADDRESS=localhost:7051 &&
             peer channel create \
-              -o localhost:7050 \
-              -c {{ item.name }} \
-              -f {{ fabric_artifacts }}/channel/{{ item.name }}.tx \
-              --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem"
+            -o localhost:7050 \
+            -c {{ item.name }} \
+            -f {{ fabric_artifacts }}/channel/{{ item.name }}.tx \
+            --outputBlock {{ fabric_artifacts }}/channel/{{ item.name }}.block \
+            --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem"
       loop: "{{ global_channels }}"
       when: "org in item.particapants[0]"
+
+    - name: Joining other channels
+      raw: "export CORE_PEER_TLS_ENABLED=true &&
+            export CORE_PEER_LOCALMSPID=org0MSP &&
+            export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
+            export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
+            export CORE_PEER_ADDRESS=localhost:7051 &&
+            peer channel join -b {{ fabric_artifacts }}/channel/{{ item.name }}.block"
+      loop: "{{ global_channels }}"
+      when: "org in item.particapants"
 
 # -o orderer{{ orderer_id | default() }}.{{ global_domain }}:7050 \
