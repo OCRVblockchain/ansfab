@@ -1,0 +1,56 @@
+version: '2'
+
+services:
+
+  peer0.{{ org }}.{{ global_domain }}:
+    container_name: peer0.{{ org }}.{{ global_domain }}
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.{{ org }}.{{ global_domain }}
+      - CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.{{ org }}.{{ global_domain }}:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.{{ org }}.{{ global_domain }}:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.{{ org }}.{{ global_domain }}:7051
+      - CORE_PEER_LOCALMSPID={{ org }}MSP
+    ports:
+      - {{ peer0_port }}:7051
+    volumes:
+      - {{ peer_org }}:/etc/hyperledger/crypto/peer
+      #- {{ peer_dir }}/tls:/etc/hyperledger/crypto/peer/tls
+      #- peer0.{{ org }}.{{ global_domain }}:/var/hyperledger/production
+    depends_on:
+      - ca.{{ org }}.{{ global_domain }}
+{% if use_couchdb == 'yes' %}
+      - couchdb.{{ org }}.{{ global_domain }}
+{% endif %}
+    extra_hosts:
+{% for fabric_host in groups['nodes'] %}
+{% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
+{% if 'orderer' in hostvars[fabric_host].node_roles %}
+      -  orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+{% endif %}
+{% if 'peer' in hostvars[fabric_host].node_roles %}
+      -  peer0.{{ hostvars[fabric_host].org }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{% if use_couchdb == 'yes' %}
+  couchdb.{{ org }}.{{ global_domain }}:
+    container_name: couchdb.{{ org }}.{{ global_domain }}
+    image: hyperledger/fabric-couchdb:{{ fabric_thirdparty_version }}
+    restart: {{ docker_restart_policy }}
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+#    environment:
+#      - COUCHDB_USER=
+#      - COUCHDB_PASSWORD=
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - {{ couchdb_port }}:5984
+{% endif %}
