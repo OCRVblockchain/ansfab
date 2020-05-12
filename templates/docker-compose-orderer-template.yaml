@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  orderer.{{ org }}.{{ global_domain }}:
-    container_name: orderer{{ orderer_id | default() }}.{{ global_domain }}
+  orderer{{ orderer_id | default() }}.{{ global_domain }}:
+    container_name: orderer{{ orderer_id | default() }}.{{ org }}.{{ global_domain }}
     restart: always
     image: hyperledger/fabric-orderer:latest
     environment:
@@ -25,13 +25,13 @@ services:
       - 7050:7050
     volumes:
       - {{ fabric_artifacts }}/channel:/etc/hyperledger/configtx
-      - {{ fabric_artifacts }}/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - {{ orderer_dir }}:/etc/hyperledger/crypto/orderer
+      - {{ orderer_org }}:/etc/hyperledger/crypto/orderer
+      - {{ orderer_dir }}/tls:/etc/hyperledger/crypto/orderer/tls
     extra_hosts:
-{% for fabric_host in groups['nodes'] %}
-{% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
-{% if 'orderer' in hostvars[fabric_host].node_roles %}
-      - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
-{% endif %}
-{% endif %}
-{% endfor %}
+    {% for fabric_host in groups['nodes'] %}
+    #{% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
+    {% if 'orderer' in hostvars[fabric_host].node_roles %}
+          - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+    {% endif %}
+    #{% endif %}
+    {% endfor %}

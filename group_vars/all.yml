@@ -19,6 +19,7 @@ orderer_dir: "{{ orderer_org }}/orderers/orderer{{ orderer_id | default() }}.{{ 
 peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ global_domain }}"
 
 admin_dir: "{{ peer_org }}/users/Admin@{{ org }}.{{ global_domain }}"
+admin_orderer_dir: "{{ orderer_org }}/users/Admin@{{ global_domain }}"
 registrar_peer: "{{ peer_org }}"
 registrar_orderer: "{{ orderer_org }}"
 

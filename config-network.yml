@@ -64,6 +64,22 @@
         - name: Sleep 10s
           raw: "sleep 10"
 
+#        - name: NodeOUs
+#          raw: "echo 'NodeOUs:
+#          Enable: true
+#          ClientOUIdentifier:
+#            #Certificate: cacerts/localhost-7054.pem
+#            OrganizationalUnitIdentifier: client
+#          PeerOUIdentifier:
+#            #Certificate: cacerts/localhost-7054.pem
+#            OrganizationalUnitIdentifier: peer
+#          AdminOUIdentifier:
+#            #Certificate: cacerts/localhost-7054.pem
+#            OrganizationalUnitIdentifier: admin
+#          OrdererOUIdentifier:
+#            #Certificate: cacerts/localhost-7054.pem
+#            OrganizationalUnitIdentifier: orderer' > {{ peer_org }}/msp/config.yaml"
+
         - name: Register the org admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
@@ -73,6 +89,9 @@
         - name: Register orderer
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name orderer --id.secret ordererpw --id.type orderer -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
+        - name: Register the orderer admin
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name ordererAdmin --id.secret ordereradminpw --id.type admin -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
         ###########################
         #### Enroll identities ####
         ###########################
@@ -80,8 +99,20 @@
         - name: Enroll the org admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://{{ org }}admin:adminpw@localhost:7054 -M {{ admin_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
+        - name: Copy to admincerts
+          raw: "mkdir -p {{ peer_org }}/users/Admin@{{ global_domain }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/users/Admin@{{ global_domain }}/msp/admincerts"
+
         - name: Enroll the peer0
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 -M {{ peer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Sleep 5s
+          raw: "sleep 5"
+
+#        - name: Copy config.yaml (peer)
+#          raw: "cp {{ peer_org }}/msp/config.yaml {{ peer_dir }}/msp/config.yaml"
+
+        - name: Copy to admincerts
+          raw: "mkdir -p {{ peer_org }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/msp/admincerts/"
 
         - name: Enroll the peer0 TLS
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --enrollment.profile tls -M {{ peer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
@@ -104,14 +135,48 @@
         - name: Enroll the CA admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
+#        - name: Sleep 10s
+#          raw: "sleep 10"
+#
+#        - name: NodeOUs
+#          raw: "echo 'NodeOUs:
+#          Enable: true
+#          ClientOUIdentifier:
+#            Certificate: cacerts/localhost-9054-ca-orderer.pem
+#            OrganizationalUnitIdentifier: client
+#          PeerOUIdentifier:
+#            Certificate: cacerts/localhost-9054-ca-orderer.pem
+#            OrganizationalUnitIdentifier: peer
+#          AdminOUIdentifier:
+#            Certificate: cacerts/localhost-9054-ca-orderer.pem
+#            OrganizationalUnitIdentifier: admin
+#          OrdererOUIdentifier:
+#            Certificate: cacerts/localhost-9054-ca-orderer.pem
+#            OrganizationalUnitIdentifier: orderer' > ${PWD}/organizations/ordererOrganizations/example.com/msp/config.yaml"
+
         - name: Enroll the orderer
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Sleep 5s
+          raw: "sleep 5"
+
+#        - name: Copy config.yaml (orderer)
+#          raw: "cp {{ peer_org }}/msp/config.yaml {{ orderer_dir }}/msp/config.yaml"
 
         - name: Enroll the orderer TLS
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/tls --enrollment.profile tls -M {{ orderer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
+        - name: Enroll the orderer admin
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://ordererAdmin:ordereradminpw@localhost:7054  -M {{ admin_orderer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+
+        - name: Copy to admincerts
+          raw: "mkdir -p {{ orderer_org }}/msp/admincerts && cp {{ admin_orderer_dir }}/msp/signcerts/*.pem {{ orderer_org }}/msp/admincerts/"
+
         - name: Sleep 5s
           raw: "sleep 5"
+
+#        - name: Copy config.yaml (orderer)
+#          raw: "cp {{ peer_org }}/msp/config.yaml {{ admin_orderer_dir }}/msp/config.yaml"
 
         - name: Prepare TLS folders (step 1)
           raw: "cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_dir }}/tls/ca.crt &&
@@ -134,7 +199,7 @@
           loop: "{{ orderer_templates }}"
 
         - name: Generate genesis block
-          raw: "configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ fabric_starter_workdir }} -channelID initial -outputBlock {{ fabric_artifacts }}/channel/genesis.block"
+          raw: "mkdir {{ fabric_artifacts }}/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ fabric_starter_workdir }} -channelID initial -outputBlock {{ fabric_artifacts }}/channel/genesis.block"
 
         - name: Generating channels config transactions, if any
           raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputCreateChannelTx {{ fabric_artifacts }}/channel/{{ item.name }}.tx -channelID {{ item.name }}"
