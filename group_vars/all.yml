@@ -6,6 +6,11 @@ api_port: 4000
 ca_port: 7054
 peer0_port: 7051
 
+# Use couchdb in peers instead of leveldb
+#use_couchdb: 'yes'
+use_couchdb: 'no'
+couchdb_port: 5984
+
 fabric_starter_workdir: "$HOME/{{ ansible_user }}/{{ project_name }}"
 docker_artifacts: "{{ fabric_starter_workdir }}/dockercompose"
 fabric_artifacts: "{{ fabric_starter_workdir }}/artifacts"
@@ -46,3 +51,9 @@ orderer_templates:
     to: "{{ fabric_starter_workdir }}/configtx.yaml"
   - from: "docker-compose-orderer-template.yaml"
     to: "{{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml"
+
+peer_templates:
+  - from: "base.yaml"
+    to: "{{ docker_artifacts }}/base.yaml"
+  - from: "docker-compose-peer-template.yaml"
+    to: "{{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml"

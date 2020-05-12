@@ -47,31 +47,10 @@
         - name: Start orderer
           raw: "docker-compose -f {{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml up -d 2>&1"
 
-        - name: Generate init-script..
-          lineinfile:
-            path: "{{ fabric_starter_workdir }}/start-node.sh"
-            line: "docker-compose -f {{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml up -d 2>&1"
-            create: yes
-
-        - name: Generate down-script..
-          lineinfile:
-            path: "{{ fabric_starter_workdir }}/stop-node.sh"
-            insertbefore: BOF
-            line: "docker-compose -f {{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml down"
-            create: yes
-
-        - name: Let orderer start
-          raw: "docker logs orderer{{ orderer_id | default() }}.{{ global_domain }}"
-          register: result
-          until: result.stdout.find("Beginning to serve requests") != -1
-          retries: 60
-          delay: 1
-
       when: "'ca' in node_roles"
 
-
-#    - name: Starting peers
-#      block:
+    - name: Starting peers
+      block:
 #
 #        - name: Create all folders for rsync..
 #          file:
@@ -91,27 +70,14 @@
 #        #      - name: Synchronize middleware folder
 #        #        synchronize: src="middleware" dest="{{ fabric_starter_workdir }}" recursive=yes
 #
-#        - name: Start docker containers
-#          raw: "docker-compose -f {{ docker_artifacts }}/docker-compose-{{ org }}.yaml up -d 2>&1"
-#
-#        - name: Generate init-script..
-#          lineinfile:
-#            path: "{{ fabric_starter_workdir }}/start-node.sh"
-#            line: "docker-compose -f {{ docker_artifacts }}/docker-compose-{{ org }}.yaml up -d 2>&1"
-#            create: yes
-#
-#        - name: Generate down-script..
-#          lineinfile:
-#            path: "{{ fabric_starter_workdir }}/stop-node.sh"
-#            insertbefore: BOF
-#            line: "docker-compose -f {{ docker_artifacts }}/docker-compose-{{ org }}.yaml down"
-#            create: yes
+        - name: Start docker containers
+          raw: "docker-compose -f {{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml up -d 2>&1"
 #
 #        - name: Install chaincode
 #          include_tasks: playbooks/install-chaincode.yaml
 #          loop: "{{ global_channels }}"
 #
-#      when: "'peer' in node_roles"
+      when: "'ca' in node_roles"
 #
 #    - name: Creating channels
 #      block:

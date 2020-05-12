@@ -64,22 +64,6 @@
         - name: Sleep 10s
           raw: "sleep 10"
 
-#        - name: NodeOUs
-#          raw: "echo 'NodeOUs:
-#          Enable: true
-#          ClientOUIdentifier:
-#            #Certificate: cacerts/localhost-7054.pem
-#            OrganizationalUnitIdentifier: client
-#          PeerOUIdentifier:
-#            #Certificate: cacerts/localhost-7054.pem
-#            OrganizationalUnitIdentifier: peer
-#          AdminOUIdentifier:
-#            #Certificate: cacerts/localhost-7054.pem
-#            OrganizationalUnitIdentifier: admin
-#          OrdererOUIdentifier:
-#            #Certificate: cacerts/localhost-7054.pem
-#            OrganizationalUnitIdentifier: orderer' > {{ peer_org }}/msp/config.yaml"
-
         - name: Register the org admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
@@ -135,25 +119,6 @@
         - name: Enroll the CA admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
-#        - name: Sleep 10s
-#          raw: "sleep 10"
-#
-#        - name: NodeOUs
-#          raw: "echo 'NodeOUs:
-#          Enable: true
-#          ClientOUIdentifier:
-#            Certificate: cacerts/localhost-9054-ca-orderer.pem
-#            OrganizationalUnitIdentifier: client
-#          PeerOUIdentifier:
-#            Certificate: cacerts/localhost-9054-ca-orderer.pem
-#            OrganizationalUnitIdentifier: peer
-#          AdminOUIdentifier:
-#            Certificate: cacerts/localhost-9054-ca-orderer.pem
-#            OrganizationalUnitIdentifier: admin
-#          OrdererOUIdentifier:
-#            Certificate: cacerts/localhost-9054-ca-orderer.pem
-#            OrganizationalUnitIdentifier: orderer' > ${PWD}/organizations/ordererOrganizations/example.com/msp/config.yaml"
-
         - name: Enroll the orderer
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
@@ -207,6 +172,15 @@
           when: "global_channels is defined"
 
       when: "'ca' in node_roles"
+
+    - name: Configure peer
+      block:
+
+        - name: Transfer peer configuration files
+          template:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+          loop: "{{ peer_templates }}"
 
     - name: Generate anchor peers updates
       block:
