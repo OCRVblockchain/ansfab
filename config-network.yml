@@ -127,7 +127,7 @@
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Enroll the orderer
-          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts localhost -M {{ orderer_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Sleep 5s
           raw: "sleep 5"
@@ -136,7 +136,7 @@
 #          raw: "cp {{ peer_org }}/msp/config.yaml {{ orderer_dir }}/msp/config.yaml"
 
         - name: Enroll the orderer TLS
-          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 -M {{ orderer_dir }}/tls --enrollment.profile tls -M {{ orderer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts localhost -M {{ orderer_dir }}/tls --enrollment.profile tls -M {{ orderer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Enroll the orderer admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://ordererAdmin:ordereradminpw@localhost:7054  -M {{ admin_orderer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
@@ -161,7 +161,7 @@
 
         - name: Prepare TLS folders (step 2)
           raw: "mkdir {{ orderer_dir }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_dir }}/msp/tlscacerts/tlsca.{{ global_domain }}-cert.pem &&
-                mkdir {{ orderer_org }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_org }}/msp/tlscacerts/tlsca.{{ global_domain }}-cert.pem"
+                mkdir {{ orderer_org }}/tlsca && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem"
 
       when: "'ca' in node_roles"
 
