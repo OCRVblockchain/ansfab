@@ -46,6 +46,9 @@
             dest: "{{ item.to }}"
           loop: "{{ ca_templates }}"
 
+#        - name: Init CA
+#          raw: "export CA_CFG_PATH={{ ca_dir }} && fabric-ca-server init -b admin:adminpw"
+
         - name: Start CA container
           become: true
           raw: "docker-compose --file {{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml up -d && sleep 12"
@@ -84,10 +87,10 @@
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://{{ org }}admin:adminpw@localhost:7054 -M {{ admin_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Copy to admincerts
-          raw: "mkdir -p {{ peer_org }}/users/Admin@{{ global_domain }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/users/Admin@{{ global_domain }}/msp/admincerts"
+          raw: "mkdir -p {{ peer_org }}/users/Admin@{{ org }}.{{ global_domain }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/users/Admin@{{ org }}.{{ global_domain }}/msp/admincerts"
 
         - name: Enroll the peer0
-          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 -M {{ peer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts localhost -M {{ peer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Sleep 5s
           raw: "sleep 5"
@@ -99,7 +102,7 @@
           raw: "mkdir -p {{ peer_org }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/msp/admincerts/"
 
         - name: Enroll the peer0 TLS
-          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --enrollment.profile tls -M {{ peer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
+          raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts localhost --enrollment.profile tls -M {{ peer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Sleep 5s
           raw: "sleep 5"
@@ -107,7 +110,11 @@
         - name: Prepare TLS folders (step 1)
           raw: "cp {{ peer_dir }}/tls/tlscacerts/*.pem {{ peer_dir }}/tls/ca.crt &&
                 cp {{ peer_dir }}/tls/keystore/* {{ peer_dir }}/tls/server.key &&
-                cp {{ peer_dir }}/tls/signcerts/*.pem {{ peer_dir }}/tls/server.crt"
+                cp {{ peer_dir }}/tls/signcerts/*.pem {{ peer_dir }}/tls/server.crt &&
+                mkdir {{ peer_org }}/tls &&
+                cp {{ peer_dir }}/tls/tlscacerts/*.pem {{ peer_org }}/tls/ca.crt &&
+                cp {{ peer_dir }}/tls/keystore/* {{ peer_org }}/tls/server.key &&
+                cp {{ peer_dir }}/tls/signcerts/*.pem {{ peer_org }}/tls/server.crt"
 
         - name: Prepare TLS folders (step 2)
           raw: "mkdir {{ peer_org }}/msp/tlscacerts && cp {{ peer_dir }}/tls/tlscacerts/* {{ peer_org }}/msp/tlscacerts/ca.crt &&
@@ -146,7 +153,11 @@
         - name: Prepare TLS folders (step 1)
           raw: "cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_dir }}/tls/ca.crt &&
                 cp {{ orderer_dir }}/tls/keystore/* {{ orderer_dir }}/tls/server.key &&
-                cp {{ orderer_dir }}/tls/signcerts/*.pem {{ orderer_dir }}/tls/server.crt"
+                cp {{ orderer_dir }}/tls/signcerts/*.pem {{ orderer_dir }}/tls/server.crt &&
+                mkdir {{ orderer_org }}/tls &&
+                cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_org }}/tls/ca.crt &&
+                cp {{ orderer_dir }}/tls/keystore/* {{ orderer_org }}/tls/server.key &&
+                cp {{ orderer_dir }}/tls/signcerts/*.pem {{ orderer_org }}/tls/server.crt"
 
         - name: Prepare TLS folders (step 2)
           raw: "mkdir {{ orderer_dir }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_dir }}/msp/tlscacerts/tlsca.{{ global_domain }}-cert.pem &&
