@@ -80,9 +80,9 @@
           include_tasks: create-channels.yaml
          # loop: "{{ global_channels }}"
 
-#        - name: Install chaincode
-#          include_tasks: install-chaincode.yaml
-#          loop: "{{ global_channels }}"
+        - name: Install chaincode
+          include_tasks: install-chaincode.yaml
+          loop: "{{ global_channels }}"
 #
       when: "'ca' in node_roles"
 #

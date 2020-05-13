@@ -9,7 +9,7 @@
         export CORE_PEER_LOCALMSPID="org0MSP" &&
         export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
         export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
-        export CORE_PEER_ADDRESS=localhost:7051 &&
+        export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
         peer lifecycle chaincode package fabcar.tar.gz --path ./chaincode/fabcar/javascript/ --lang node --label fabcar_1'
   when: "org in item.particapants"
   #ignore_errors: true
@@ -19,7 +19,7 @@
         export CORE_PEER_LOCALMSPID="org0MSP" &&
         export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
         export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
-        export CORE_PEER_ADDRESS=localhost:7051 &&
+        export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
         peer lifecycle chaincode install fabcar.tar.gz'
 
 #peer chaincode install -n {{ item.chaincode.name }} -v {{ item.chaincode.version }} -p ./chaincode/fabcar/javascript" #{% if global_chaincode_lang != 'golang' %} /opt/gopath/src/{{ item.chaincode.name }} {% else %} {{ item.chaincode.name }} {% endif %} -l {{ global_chaincode_lang }}'"

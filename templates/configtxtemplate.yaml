@@ -233,6 +233,7 @@ Application: &ApplicationDefaults
 
     Capabilities:
         <<: *ApplicationCapabilities
+
 ################################################################################
 #
 #   SECTION: Orderer
@@ -243,15 +244,23 @@ Application: &ApplicationDefaults
 ################################################################################
 Orderer: &OrdererDefaults
 
-    # Orderer Type: The orderer implementation to start
     OrdererType: etcdraft
-
     EtcdRaft:
         Consenters:
-            - Host: orderer0.{{ global_domain }}
-              Port: 7050
-              ClientTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer0.{{ global_domain }}/tls/server.crt
-              ServerTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer0.{{ global_domain }}/tls/server.crt
+{% for fabric_host in groups['nodes'] %}
+{% if 'orderer' in hostvars[fabric_host].node_roles %}
+            - Host: orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}
+              Port: {{ orderer_port }}
+              ClientTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
+              ServerTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
+{% endif %}
+{% endfor %}
+    Addresses:
+{% for fabric_host in groups['nodes'] %}
+{% if 'orderer' in hostvars[fabric_host].node_roles %}
+        - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ orderer_port }}
+{% endif %}
+{% endfor %}
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -343,22 +352,6 @@ Profiles:
         Orderer:
             <<: *OrdererDefaults
             OrdererType: etcdraft
-            EtcdRaft:
-                Consenters:
-{% for fabric_host in groups['nodes'] %}
-{% if 'orderer' in hostvars[fabric_host].node_roles %}
-                - Host: orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}
-                  Port: {{ orderer_port }}
-                  ClientTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
-                  ServerTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
-{% endif %}
-{% endfor %}
-            Addresses:
-{% for fabric_host in groups['nodes'] %}
-{% if 'orderer' in hostvars[fabric_host].node_roles %}
-                - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ orderer_port }}
-{% endif %}
-{% endfor %}
             Organizations:
                 - *OrdererOrg
             Capabilities:

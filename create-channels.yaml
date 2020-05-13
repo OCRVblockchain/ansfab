@@ -6,9 +6,9 @@
             export CORE_PEER_LOCALMSPID=org0MSP &&
             export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
             export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
-            export CORE_PEER_ADDRESS=localhost:7051 &&
+            export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
             peer channel create \
-            -o localhost:7050 \
+            -o orderer{{ orderer_id | default() }}.{{ global_domain }}:7050 \
             -c {{ item.name }} \
             -f {{ fabric_artifacts }}/channel/{{ item.name }}.tx \
             --outputBlock {{ fabric_artifacts }}/channel/{{ item.name }}.block \
@@ -21,7 +21,7 @@
             export CORE_PEER_LOCALMSPID=org0MSP &&
             export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
             export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
-            export CORE_PEER_ADDRESS=localhost:7051 &&
+            export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
             peer channel join -b {{ fabric_artifacts }}/channel/{{ item.name }}.block"
       loop: "{{ global_channels }}"
       when: "org in item.particapants"
@@ -31,8 +31,8 @@
             export CORE_PEER_LOCALMSPID=org0MSP &&
             export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
             export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
-            export CORE_PEER_ADDRESS=localhost:7051 &&
-            peer channel update -o localhost:7050 -c {{ item.name }} -f {{ fabric_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem"
+            export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
+            peer channel update -o orderer{{ orderer_id | default() }}.{{ global_domain }}:7050 -c {{ item.name }} -f {{ fabric_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem"
       loop: "{{ global_channels }}"
       when: "org in item.particapants"
 
