@@ -73,9 +73,6 @@
         - name: Start docker containers
           raw: "docker-compose -f {{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml up -d 2>&1"
 #
-#        - name: Install chaincode
-#          include_tasks: playbooks/install-chaincode.yaml
-#          loop: "{{ global_channels }}"
         - name: Create channels
           include_tasks: create-channels.yaml
          # loop: "{{ global_channels }}"

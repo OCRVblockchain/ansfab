@@ -22,4 +22,15 @@
         export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
         peer lifecycle chaincode install fabcar.tar.gz'
 
+- name: Approve for org
+  raw: 'export CORE_PEER_TLS_ENABLED=true &&
+        export CORE_PEER_LOCALMSPID="org0MSP" &&
+        export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
+        export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
+        export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
+
+        peer lifecycle chaincode queryinstalled >&log.txt &&
+        PACKAGE_ID=$(sed -n "/fabcar_{{ item.chaincode.version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
+        peer lifecycle chaincode approveformyorg -o orderer{{ orderer_id | default() }}.{{ global_domain }}:7050 --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem --channelID {{ item.name }} --name fabcar --version {{ item.chaincode.version }} --init-required --package-id ${PACKAGE_ID} --sequence {{ item.chaincode.version }} >&log.txt'
+
 #peer chaincode install -n {{ item.chaincode.name }} -v {{ item.chaincode.version }} -p ./chaincode/fabcar/javascript" #{% if global_chaincode_lang != 'golang' %} /opt/gopath/src/{{ item.chaincode.name }} {% else %} {{ item.chaincode.name }} {% endif %} -l {{ global_chaincode_lang }}'"
