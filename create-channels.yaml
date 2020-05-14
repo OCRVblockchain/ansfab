@@ -1,6 +1,9 @@
 - name: Creating channels
   block:
 
+    - name: Copying core.yaml to FABRIC_CFG_PATH
+      raw: "docker cp peer0.{{ org }}.{{ global_domain }}:/etc/hyperledger/fabric/core.yaml ."
+
     - name: Creating channels
       raw: "export CORE_PEER_TLS_ENABLED=true &&
             export CORE_PEER_LOCALMSPID=org0MSP &&

@@ -19,9 +19,12 @@ services:
     ports:
       - {{ peer0_port }}:7051
     volumes:
+      - /var/run/:/host/var/run/
       - {{ peer_org }}:/etc/hyperledger/crypto/peer
       #- {{ peer_dir }}/tls:/etc/hyperledger/crypto/peer/tls
       #- peer0.{{ org }}.{{ global_domain }}:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
     depends_on:
       - ca.{{ org }}.{{ global_domain }}
 {% if use_couchdb == 'yes' %}
