@@ -1,5 +1,9 @@
 ---
 
+- name: Install chaincode dependencies
+  npm:
+    path: '{{ fabric_starter_workdir }}/chaincode/fabcar/javascript'
+
 - name: Package chaincode
   #raw: "docker exec 'cli.{{ org }}.{{ global_domain }}' bash -c 'export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 && peer chaincode install -n {{ item.chaincode.name }} -v {{ item.chaincode.version }} -p {% if global_chaincode_lang != 'golang' %} /opt/gopath/src/{{ item.chaincode.name }} {% else %} {{ item.chaincode.name }} {% endif %} -l {{ global_chaincode_lang }}'"
   raw: 'export FABRIC_CFG_PATH=$PWD &&
@@ -8,7 +12,7 @@
         export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
         export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
         export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
-        peer lifecycle chaincode package fabcar.tar.gz --path ./chaincode/fabcar/javascript/ --lang node --label fabcar_1'
+        peer lifecycle chaincode package fabcar.tar.gz --path {{ fabric_starter_workdir }}/chaincode/fabcar/javascript/ --lang node --label fabcar_1'
   when: "org in item.particapants"
   #ignore_errors: true
 

@@ -1,6 +1,8 @@
 - hosts: nodes
-  become: yes
-  connection: local
+  become: true
+#  connection: local
+#  environment:
+#    PATH: "$HOME/fabric-tools/bin:$PATH"
   tasks:
     - name: Clean local artifacts folder
       file:
@@ -46,15 +48,10 @@
             dest: "{{ item.to }}"
           loop: "{{ ca_templates }}"
 
-#        - name: Init CA
-#          raw: "export CA_CFG_PATH={{ ca_dir }} && fabric-ca-server init -b admin:adminpw"
-
         - name: Start CA container
-          become: true
           raw: "docker-compose --file {{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml up -d && sleep 12"
 
         - name: Copy artifacts from CA
-          become: true
           raw: "docker cp ca.{{ org }}.{{ global_domain }}:/etc/hyperledger/fabric-ca-server {{ ca_dir }}"
 
         ###########################
@@ -191,6 +188,12 @@
 
     - name: Configure peer
       block:
+
+        - name: Transfer chaincode
+          copy:
+            src: "./chaincode"
+            dest: "{{ fabric_starter_workdir }}"
+            directory_mode: yes
 
         - name: Transfer peer configuration files
           template:

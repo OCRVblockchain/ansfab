@@ -1,6 +1,6 @@
 ---
 - hosts: nodes
-  connection: local
+#  connection: local
   tasks:
 
 #    - name: Perfom check for 'newcomers' flag
@@ -39,7 +39,7 @@
 #        ansible_user_gid: "{{ ansible_gid.stdout | int }}"
     -
     - name: Changing ownership of project
-      raw: "sudo chown -R deniskozlov {{ fabric_starter_workdir }}"
+      raw: "sudo chown -R root {{ fabric_starter_workdir }}"
 
     - name: Starting orderer
       block:
@@ -73,9 +73,9 @@
         - name: Start docker containers
           raw: "docker-compose -f {{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml up -d 2>&1"
 
-        - name: Create channels
-          include_tasks: create-channels.yaml
-         # loop: "{{ global_channels }}"
+#        - name: Create channels
+#          include_tasks: create-channels.yaml
+#         # loop: "{{ global_channels }}"
 
         - name: Install chaincode
           include_tasks: install-chaincode.yaml
