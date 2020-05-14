@@ -46,7 +46,17 @@
         export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
         export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
 
-        peer chaincode invoke -o orderer{{ orderer_id | default() }}.{{ global_domain }}:7050 --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem -C {{ item.name }} -n fabcar --peerAddresses peer0.{{ org }}.{{ global_domain }}:7051 --tlsRootCertFiles {{ peer_org }}/tls/ca.crt --isInit -c '{\"function\":\"initLedger\",\"Args\":[]}'"
+        peer chaincode invoke -o orderer{{ orderer_id | default() }}.{{ global_domain }}:7050 --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ global_domain }}-cert.pem -C {{ item.name }} -n fabcar --peerAddresses peer0.{{ org }}.{{ global_domain }}:7051 --tlsRootCertFiles {{ peer_org }}/tls/ca.crt --isInit -c '{\"function\":\"initLedger\",\"Args\":[]}' &&
+        sleep 10"
+
+- name: Query chaincode
+  raw: "export CORE_PEER_TLS_ENABLED=true &&
+        export CORE_PEER_LOCALMSPID='org0MSP' &&
+        export CORE_PEER_TLS_ROOTCERT_FILE={{ peer_dir }}/tls/ca.crt &&
+        export CORE_PEER_MSPCONFIGPATH={{ admin_dir }}/msp &&
+        export CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051 &&
+
+        peer chaincode query -C {{ item.name }} -n fabcar -c '{\"Args\":[\"queryAllCars\"]}' >&res.txt"
 
 #  peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --channelID mychannel --name fabcar --version 1.0 --sequence 1 --init-required --tls true --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
 
