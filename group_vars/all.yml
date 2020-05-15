@@ -32,13 +32,16 @@ registrar_orderer: "{{ orderer_org }}"
 #registrar_dir: "{{ peer_dir }}/users/admin"
 #registrar_tls_dir: "{{ peer_dir }}/users/admin_tls"
 
-
 # Folders to create for configs
 fabric_artifacts_folders:
   - "{{ fabric_starter_workdir }}"
   - "{{ docker_artifacts }}"
   - "{{ fabric_artifacts }}"
   - "{{ ca_dir }}"
+
+local_templates:
+  - from: "configtxtemplate.yaml"
+    to: "./artifacts/configtx.yaml"
 
 ca_templates:
   - from: "fabric-ca-server-config-template.yaml"
@@ -47,8 +50,6 @@ ca_templates:
     to: "{{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml"
 
 orderer_templates:
-  - from: "configtxtemplate.yaml"
-    to: "configtx.yaml"
   - from: "docker-compose-orderer-template.yaml"
     to: "{{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml"
 
@@ -57,7 +58,6 @@ peer_templates:
     to: "{{ docker_artifacts }}/base.yaml"
   - from: "docker-compose-peer-template.yaml"
     to: "{{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml"
-
 
 files_to_rsync_peer:
 #  - from: "{{ org }}Config.json"
@@ -80,3 +80,7 @@ files_to_rsync_orderer:
     to: "./artifacts/crypto-config/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ orderer_id | default() }}.{{ global_domain }}"
 #  - from: "channel"
 #    to: ""
+
+files_to_rsync_root_orderer:
+  - from: "{{ orderer_org }}/msp"
+    to: "./artifacts/crypto-config/ordererOrganizations/{{ global_domain }}"

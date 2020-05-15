@@ -4,13 +4,21 @@
 #  environment:
 #    PATH: "$HOME/fabric-tools/bin:$PATH"
   tasks:
-    - name: Clean local artifacts folder
+#    - name: Clean local artifacts folder
+#      file:
+#        path: "{{ item }}"
+#        state: absent
+#      loop:
+#        - "./artifacts"
+#      ignore_errors: true
+#      delegate_to: localhost
+
+    - name: Clean remote artifacts folder
       file:
-        path: "{{ fabric_artifacts }}"
-        state: "{{ item }}"
+        path: "{{ item }}"
+        state: absent
       loop:
-        - "absent"
-        - "directory"
+        - "{{ fabric_starter_workdir }}"
       ignore_errors: true
 
     - name: Clean all previous dockers, if any
@@ -25,20 +33,34 @@
       raw: "docker image rm $(docker image ls | grep {{ global_domain }} | awk '{print $1};')"
       ignore_errors: true
 
-    - name: Clean all config folders
-      become: true
-      file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ fabric_starter_workdir }}"
-        - "$PWD/artifacts"
+#    - name: Clean all config folders
+#      become: true
+#      file:
+#        path: "{{ item }}"
+#        state: absent
+#      loop:
+#        - "{{ fabric_starter_workdir }}"
+#        - "./artifacts"
 
     - name: Ensure all folders exist
       file:
         dest: "{{ item }}"
         state: directory
       loop: "{{ fabric_artifacts_folders }}"
+
+    - name: Prepare local folders
+      block:
+
+        - name: Recreate local artifacts folder
+          raw: "rm -rf ./artifacts && mkdir artifacts"
+
+        - name: Transfer local configaration files
+          template:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+          loop: "{{ local_templates }}"
+
+      delegate_to: localhost
 
     - name: Configure CA
       block:
@@ -192,6 +214,15 @@
             recursive: yes
           loop: "{{ files_to_rsync_orderer }}"
 
+        - name: Synchronize root orderer MSP
+          synchronize:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+            mode: pull
+            recursive: yes
+          loop: "{{ files_to_rsync_root_orderer }}"
+          when: "'root_orderer' in node_roles"
+
       when: "'orderer' in node_roles"
 
     - name: Configure peer
@@ -225,10 +256,10 @@
       block:
 
         - name: Generate genesis block
-          raw: "mkdir ./artifacts/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath . -channelID initial -outputBlock ./artifacts/channel/genesis.block"
+          raw: "mkdir ./artifacts/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath ./artifacts -channelID initial -outputBlock ./artifacts/channel/genesis.block"
 
         - name: Generating channels config transactions, if any
-          raw: "configtxgen -profile {{ item.name }} -configPath . -outputCreateChannelTx ./artifacts/channel/{{ item.name }}.tx -channelID {{ item.name }}"
+          raw: "configtxgen -profile {{ item.name }} -configPath ./artifacts -outputCreateChannelTx ./artifacts/channel/{{ item.name }}.tx -channelID {{ item.name }}"
           loop: "{{ global_channels }}"
           when: "global_channels is defined"
 
