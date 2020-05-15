@@ -37,7 +37,7 @@
 #    - set_fact:
 #        ansible_user_uid: "{{ ansible_uid.stdout | int }}"
 #        ansible_user_gid: "{{ ansible_gid.stdout | int }}"
-    -
+
     - name: Changing ownership of project
       raw: "sudo chown -R root {{ fabric_starter_workdir }}"
 

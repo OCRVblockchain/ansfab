@@ -32,6 +32,7 @@
         state: absent
       loop:
         - "{{ fabric_starter_workdir }}"
+        - "$PWD/artifacts"
 
     - name: Ensure all folders exist
       file:
@@ -176,24 +177,25 @@
             dest: "{{ item.to }}"
           loop: "{{ orderer_templates }}"
 
-        - name: Generate genesis block
-          raw: "mkdir {{ fabric_artifacts }}/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ fabric_starter_workdir }} -channelID initial -outputBlock {{ fabric_artifacts }}/channel/genesis.block"
+        - name: Create all folders for rsync..
+          file:
+            path: "{{ item.to }}"
+            state: directory
+          loop: "{{ files_to_rsync_orderer }}"
+          delegate_to: localhost
 
-        - name: Generating channels config transactions, if any
-          raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputCreateChannelTx {{ fabric_artifacts }}/channel/{{ item.name }}.tx -channelID {{ item.name }}"
-          loop: "{{ global_channels }}"
-          when: "global_channels is defined"
+        - name: Synchronize orderer artifacts
+          synchronize:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+            mode: pull
+            recursive: yes
+          loop: "{{ files_to_rsync_orderer }}"
 
-      when: "'ca' in node_roles"
+      when: "'orderer' in node_roles"
 
     - name: Configure peer
       block:
-
-        - name: Transfer chaincode
-          copy:
-            src: "./chaincode"
-            dest: "{{ fabric_starter_workdir }}"
-            directory_mode: yes
 
         - name: Transfer peer configuration files
           template:
@@ -201,12 +203,44 @@
             dest: "{{ item.to }}"
           loop: "{{ peer_templates }}"
 
-    - name: Generate anchor peers updates
+        - name: Create all folders for rsync..
+          file:
+            path: "{{ item.to }}"
+            state: directory
+          loop: "{{ files_to_rsync_peer }}"
+          delegate_to: localhost
+
+        - name: Synchronize peer artifacts
+          synchronize:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+            mode: pull
+            recursive: yes
+          #delegate_to: "{{ ansible_host }}"
+          loop: "{{ files_to_rsync_peer }}"
+
+      when: "'peer' in node_roles"
+
+    - name: Generate genesis artifacts
       block:
 
-        - name: Generating anchor peer updates for other channels, if defined
-          raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputAnchorPeersUpdate {{ fabric_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx -channelID {{ item.name }} -asOrg {{ org }}MSP"
-          loop: "{{ global_channels }}"
-          when: "global_channels is defined and org in item.particapants"
+        - name: Generate genesis block
+          raw: "mkdir ./artifacts/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath . -channelID initial -outputBlock ./artifacts/channel/genesis.block"
 
-      when: "'ca' in node_roles"
+        - name: Generating channels config transactions, if any
+          raw: "configtxgen -profile {{ item.name }} -configPath . -outputCreateChannelTx ./artifacts/channel/{{ item.name }}.tx -channelID {{ item.name }}"
+          loop: "{{ global_channels }}"
+          when: "global_channels is defined"
+
+      delegate_to: localhost
+      when: "'root_orderer' in node_roles"
+
+#    - name: Generate anchor peers updates
+#      block:
+#
+#        - name: Generating anchor peer updates for other channels, if defined
+#          raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputAnchorPeersUpdate {{ fabric_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx -channelID {{ item.name }} -asOrg {{ org }}MSP"
+#          loop: "{{ global_channels }}"
+#          when: "global_channels is defined and org in item.particapants"
+#
+#      when: "'peer' in node_roles"

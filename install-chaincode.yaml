@@ -1,5 +1,11 @@
 ---
 
+- name: Transfer chaincode
+  copy:
+    src: "./chaincode"
+    dest: "{{ fabric_starter_workdir }}"
+    directory_mode: yes
+
 - name: Install chaincode dependencies
   npm:
     path: '{{ fabric_starter_workdir }}/chaincode/fabcar/javascript'
