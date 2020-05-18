@@ -5,13 +5,14 @@
     - name: Prepare local artifacts folder
       block:
 
-#        - name: Clean all config folders
-#          become: true
-#          file:
-#            path: "{{ item }}"
-#            state: absent
-#          loop:
-#            - "{{ local_artifacts }}"
+        - name: Clean all config folders
+          become: true
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - "{{ local_artifacts }}"
+            - "temp"
 
         - name: Create local artifacts folder
           raw: "sudo rm -rf {{ local_artifacts }} && mkdir -p {{ local_artifacts }}"
