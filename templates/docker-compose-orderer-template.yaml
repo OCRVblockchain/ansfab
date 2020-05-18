@@ -28,10 +28,10 @@ services:
       - {{ orderer_org }}:/etc/hyperledger/crypto/orderer
       - {{ orderer_dir }}/tls:/etc/hyperledger/crypto/orderer/tls
     extra_hosts:
-    {% for fabric_host in groups['nodes'] %}
-    #{% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
-    {% if 'orderer' in hostvars[fabric_host].node_roles %}
-          - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
-    {% endif %}
-    #{% endif %}
-    {% endfor %}
+{% for fabric_host in groups['nodes'] %}
+{% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
+{% if 'orderer' in hostvars[fabric_host].node_roles %}
+      - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+{% endif %}
+{% endif %}
+{% endfor %}

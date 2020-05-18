@@ -20,7 +20,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: crypto-config/ordererOrganizations/{{ global_domain }}/msp
+        MSPDir: organizations/ordererOrganizations/{{ global_domain }}/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -47,7 +47,7 @@ Organizations:
         Name: {{ hostvars[fabric_host].org }}MSP
         # ID to load the MSP definition as
         ID: {{ hostvars[fabric_host].org }}MSP
-        MSPDir: crypto-config/peerOrganizations/{{ hostvars[fabric_host].org }}.{{ global_domain }}/msp
+        MSPDir: organizations/peerOrganizations/{{ hostvars[fabric_host].org }}.{{ global_domain }}/msp
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
         #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
@@ -272,8 +272,8 @@ Orderer: &OrdererDefaults
 {% if 'orderer' in hostvars[fabric_host].node_roles %}
             - Host: orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}
               Port: {{ orderer_port }}
-              ClientTLSCert: crypto-config/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
-              ServerTLSCert: crypto-config/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
+              ClientTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
+              ServerTLSCert: organizations/ordererOrganizations/{{ global_domain }}/orderers/orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}/tls/server.crt
 {% endif %}
 {% endfor %}
     Addresses:

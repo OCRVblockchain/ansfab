@@ -1,19 +1,31 @@
 - hosts: nodes
   become: true
-#  connection: local
-#  environment:
-#    PATH: "$HOME/fabric-tools/bin:$PATH"
   tasks:
-#    - name: Clean local artifacts folder
-#      file:
-#        path: "{{ item }}"
-#        state: absent
-#      loop:
-#        - "./artifacts"
-#      ignore_errors: true
-#      delegate_to: localhost
 
-    - name: Clean remote artifacts folder
+    - name: Prepare local artifacts folder
+      block:
+
+#        - name: Clean all config folders
+#          become: true
+#          file:
+#            path: "{{ item }}"
+#            state: absent
+#          loop:
+#            - "{{ local_artifacts }}"
+
+        - name: Create local artifacts folder
+          raw: "sudo rm -rf {{ local_artifacts }} && mkdir -p {{ local_artifacts }}"
+
+        - name: Transfer local configuration files
+          template:
+            src: "{{ item.from }}"
+            dest: "{{ item.to }}"
+          loop: "{{ local_templates }}"
+
+      ignore_errors: true
+      delegate_to: localhost
+
+    - name: Clean remote project folders
       file:
         path: "{{ item }}"
         state: absent
@@ -33,34 +45,11 @@
       raw: "docker image rm $(docker image ls | grep {{ global_domain }} | awk '{print $1};')"
       ignore_errors: true
 
-#    - name: Clean all config folders
-#      become: true
-#      file:
-#        path: "{{ item }}"
-#        state: absent
-#      loop:
-#        - "{{ fabric_starter_workdir }}"
-#        - "./artifacts"
-
     - name: Ensure all folders exist
       file:
         dest: "{{ item }}"
         state: directory
       loop: "{{ fabric_artifacts_folders }}"
-
-    - name: Prepare local folders
-      block:
-
-        - name: Recreate local artifacts folder
-          raw: "rm -rf ./artifacts && mkdir artifacts"
-
-        - name: Transfer local configaration files
-          template:
-            src: "{{ item.from }}"
-            dest: "{{ item.to }}"
-          loop: "{{ local_templates }}"
-
-      delegate_to: localhost
 
     - name: Configure CA
       block:
@@ -77,15 +66,10 @@
         - name: Copy artifacts from CA
           raw: "docker cp ca.{{ org }}.{{ global_domain }}:/etc/hyperledger/fabric-ca-server {{ ca_dir }}"
 
-        ###########################
-        ### Register identities ###
-        ###########################
+        # Register identities:
 
         - name: Enroll the CA admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
-
-        - name: Sleep 10s
-          raw: "sleep 10"
 
         - name: Register the org admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
@@ -99,9 +83,7 @@
         - name: Register the orderer admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client register --id.name ordererAdmin --id.secret ordereradminpw --id.type admin -u https://localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
-        ###########################
-        #### Enroll identities ####
-        ###########################
+        # Generate peer artifacts:
 
         - name: Enroll the org admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://{{ org }}admin:adminpw@localhost:7054 -M {{ admin_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
@@ -112,20 +94,11 @@
         - name: Enroll the peer0
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts peer0.{{ org }}.{{ global_domain }} -M {{ peer_dir }}/msp --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
-        - name: Sleep 5s
-          raw: "sleep 5"
-
-#        - name: Copy config.yaml (peer)
-#          raw: "cp {{ peer_org }}/msp/config.yaml {{ peer_dir }}/msp/config.yaml"
-
         - name: Copy to admincerts
           raw: "mkdir -p {{ peer_org }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/msp/admincerts/"
 
         - name: Enroll the peer0 TLS
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_peer }} && fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts peer0.{{ org }}.{{ global_domain }} --enrollment.profile tls -M {{ peer_dir }}/tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
-
-        - name: Sleep 5s
-          raw: "sleep 5"
 
         - name: Prepare TLS folders (step 1)
           raw: "cp {{ peer_dir }}/tls/tlscacerts/*.pem {{ peer_dir }}/tls/ca.crt &&
@@ -141,19 +114,13 @@
                 mkdir {{ peer_org }}/tlsca && cp {{ peer_dir }}/tls/tlscacerts/* {{ peer_org }}/tlsca/tlsca.{{ org }}.{{ global_domain }}-cert.pem &&
                 mkdir {{ peer_org }}/ca && cp {{ peer_dir }}/msp/cacerts/* {{ peer_org }}/ca/ca.{{ org }}.{{ global_domain }}-cert.pem"
 
-        ###########################
+        # Generate orderer artifacts:
 
         - name: Enroll the CA admin
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
 
         - name: Enroll the orderer
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ global_domain }} -M {{ orderer_dir }}/msp --tls.certfiles  {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
-
-        - name: Sleep 5s
-          raw: "sleep 5"
-
-#        - name: Copy config.yaml (orderer)
-#          raw: "cp {{ peer_org }}/msp/config.yaml {{ orderer_dir }}/msp/config.yaml"
 
         - name: Enroll the orderer TLS
           raw: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ global_domain }} -M {{ orderer_dir }}/tls --enrollment.profile tls --tls.certfiles {{ ca_dir }}/fabric-ca-server/tls-cert.pem"
@@ -163,12 +130,6 @@
 
         - name: Copy to admincerts
           raw: "mkdir -p {{ orderer_org }}/msp/admincerts && cp {{ admin_orderer_dir }}/msp/signcerts/*.pem {{ orderer_org }}/msp/admincerts/"
-
-        - name: Sleep 5s
-          raw: "sleep 5"
-
-#        - name: Copy config.yaml (orderer)
-#          raw: "cp {{ peer_org }}/msp/config.yaml {{ admin_orderer_dir }}/msp/config.yaml"
 
         - name: Prepare TLS folders (step 1)
           raw: "cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_dir }}/tls/ca.crt &&
@@ -247,7 +208,6 @@
             dest: "{{ item.to }}"
             mode: pull
             recursive: yes
-          #delegate_to: "{{ ansible_host }}"
           loop: "{{ files_to_rsync_peer }}"
 
       when: "'peer' in node_roles"
@@ -256,22 +216,32 @@
       block:
 
         - name: Generate genesis block
-          raw: "mkdir ./artifacts/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath ./artifacts -channelID initial -outputBlock ./artifacts/channel/genesis.block"
+          raw: "mkdir {{ local_artifacts }}/channel && configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ local_artifacts }} -channelID initial -outputBlock {{ local_artifacts }}/channel/genesis.block"
 
         - name: Generating channels config transactions, if any
-          raw: "configtxgen -profile {{ item.name }} -configPath ./artifacts -outputCreateChannelTx ./artifacts/channel/{{ item.name }}.tx -channelID {{ item.name }}"
+          raw: "configtxgen -profile {{ item.name }} -configPath {{ local_artifacts }} -outputCreateChannelTx {{ local_artifacts }}/channel/{{ item.name }}.tx -channelID {{ item.name }}"
           loop: "{{ global_channels }}"
           when: "global_channels is defined"
 
       delegate_to: localhost
       when: "'root_orderer' in node_roles"
 
-#    - name: Generate anchor peers updates
-#      block:
-#
-#        - name: Generating anchor peer updates for other channels, if defined
-#          raw: "configtxgen -profile {{ item.name }} -configPath {{ fabric_starter_workdir }} -outputAnchorPeersUpdate {{ fabric_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx -channelID {{ item.name }} -asOrg {{ org }}MSP"
-#          loop: "{{ global_channels }}"
-#          when: "global_channels is defined and org in item.particapants"
-#
-#      when: "'peer' in node_roles"
+    - name: Generate anchor peers updates
+      block:
+
+        - name: Generating anchor peer updates for other channels, if defined
+          raw: "configtxgen -profile {{ item.name }} -configPath {{ local_artifacts }} -outputAnchorPeersUpdate {{ local_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx -channelID {{ item.name }} -asOrg {{ org }}MSP"
+          loop: "{{ global_channels }}"
+          when: "global_channels is defined and org in item.particapants"
+
+      delegate_to: localhost
+      when: "'peer' in node_roles"
+
+    - name: Synchronize artifacts
+      synchronize:
+        src: "{{ local_artifacts }}/channel"
+        dest: "{{ fabric_artifacts }}"
+        mode: push
+        recursive: yes
+
+      when: "'peer' in node_roles"

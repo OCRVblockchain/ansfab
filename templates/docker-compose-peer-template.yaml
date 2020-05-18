@@ -25,11 +25,6 @@ services:
       #- peer0.{{ org }}.{{ global_domain }}:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
-    depends_on:
-      - ca.{{ org }}.{{ global_domain }}
-{% if use_couchdb == 'yes' %}
-      - couchdb.{{ org }}.{{ global_domain }}
-{% endif %}
     extra_hosts:
 {% for fabric_host in groups['nodes'] %}
 {% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
