@@ -1,6 +1,6 @@
 ---
 - name: Install dependencies.
-  hosts: nodes
+  hosts: all
   become: true
   tasks:
 
@@ -8,7 +8,7 @@
       include_tasks: install-docker.yaml
 
     - name: Install common deps
-      include_tasks: install-common.yaml
+      include_tasks: install-common.yml
 
     - name: Install fabric-tools
       include_tasks: install-fabric-tools.yaml

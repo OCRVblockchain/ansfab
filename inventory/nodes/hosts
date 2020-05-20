@@ -1,0 +1,7 @@
+[vscale]
+org0.example.dev
+org1.example.dev
+org2.example.dev
+
+[nodes:children]
+vscale

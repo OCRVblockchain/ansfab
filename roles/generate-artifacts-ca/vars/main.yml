@@ -1,0 +1,99 @@
+---
+with_tls_cert: "--tls.certfiles  {{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}/ca/fabric-ca-server/tls-cert.pem"
+
+fabric_starter_workdir: "/home/{{ ansible_user }}/{{ project_name }}"
+
+docker_artifacts: "{{ fabric_starter_workdir }}/dockercompose"
+fabric_artifacts: "{{ fabric_starter_workdir }}/crypto-config"
+
+orderer_org: "{{ fabric_artifacts }}/ordererOrganizations/{{ domain }}"
+peer_org: "{{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}"
+
+ca_dir: "{{ peer_org }}/ca"
+
+peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ domain }}"
+admin_dir: "{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}"
+registrar_peer: "{{ peer_org }}"
+
+orderer_dir: "{{ orderer_org }}/orderers/orderer{{ orderer_id | default() }}.{{ domain }}"
+admin_orderer_dir: "{{ orderer_org }}/users/Admin@{{ domain }}"
+registrar_orderer: "{{ orderer_org }}"
+
+fabric_artifacts_folders:
+  - "{{ fabric_starter_workdir }}"
+  - "{{ docker_artifacts }}"
+  - "{{ fabric_artifacts }}"
+  - "{{ fabric_artifacts }}/channel"
+  - "{{ ca_dir }}"
+  - "{{ peer_org }}/tls"
+  - "{{ peer_org }}/msp/tlscacerts"
+  - "{{ peer_org }}/msp/admincerts"
+  - "{{ peer_org }}/tlsca"
+  - "{{ peer_org }}/ca"
+  - "{{ orderer_org }}/tls"
+  - "{{ orderer_dir }}/msp/tlscacerts"
+  - "{{ orderer_org }}/msp/tlscacerts"
+  - "{{ orderer_org }}/msp/admincerts"
+  - "{{ orderer_org }}/tlsca"
+  - "{{ peer_dir }}/tls"
+  - "{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}/msp/admincerts"
+
+
+ca_templates:
+  - from: "fabric-ca-server-config-template.j2"
+    to: "{{ ca_dir }}/fabric-ca-server-{{ org }}.yaml"
+  - from: "docker-compose-ca-template.j2"
+    to: "{{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml"
+
+peer_crypto_transfers:
+  - from: "{{ admin_dir }}/msp/signcerts/cert.pem"
+    to: "{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}/msp/admincerts"
+  - from: "{{ admin_dir }}/msp/signcerts/cert.pem"
+    to: "{{ peer_org }}/msp/admincerts/"
+
+  - from: "{{ peer_dir }}/tls/tlscacerts/*.pem"
+    to: "{{ peer_dir }}/tls/ca.crt"
+  - from: "{{ peer_dir }}/tls/keystore/*"
+    to: "{{ peer_dir }}/tls/server.key"
+  - from: "{{ peer_dir }}/tls/signcerts/*.pem"
+    to: "{{ peer_dir }}/tls/server.crt"
+
+  - from: "{{ peer_dir }}/tls/tlscacerts/*.pem"
+    to: "{{ peer_org }}/tls/ca.crt"
+  - from: "{{ peer_dir }}/tls/keystore/*"
+    to: "{{ peer_org }}/tls/server.key"
+  - from: "{{ peer_dir }}/tls/signcerts/*.pem"
+    to: "{{ peer_org }}/tls/server.crt"
+
+  - from: "{{ peer_dir }}/tls/tlscacerts/*"
+    to: "{{ peer_org }}/msp/tlscacerts/ca.crt"
+  - from: "{{ peer_dir }}/tls/tlscacerts/*"
+    to: "{{ peer_org }}/tlsca/tlsca.{{ org }}.{{ domain }}-cert.pem"
+
+  - from: "{{ peer_dir }}/msp/cacerts/*"
+    to: "{{ peer_org }}/ca/ca.{{ org }}.{{ domain }}-cert.pem"
+
+orderer_crypto_transfers:
+  - from: "{{ admin_orderer_dir }}/msp/signcerts/cert.pem"
+    to: "{{ orderer_org }}/msp/admincerts"
+
+  - from: "{{ orderer_dir }}/tls/tlscacerts/*.pem"
+    to: "{{ orderer_dir }}/tls/ca.crt"
+  - from: "{{ orderer_dir }}/tls/keystore/*"
+    to: "{{ orderer_dir }}/tls/server.key"
+  - from: "{{ orderer_dir }}/tls/signcerts/*.pem"
+    to: "{{ orderer_dir }}/tls/server.crt"
+
+  - from: "{{ orderer_dir }}/tls/tlscacerts/*.pem"
+    to: "{{ orderer_org }}/tls/ca.crt"
+  - from: "{{ orderer_dir }}/tls/keystore/*"
+    to: "{{ orderer_org }}/tls/server.key"
+  - from: "{{ orderer_dir }}/tls/signcerts/*.pem"
+    to: "{{ orderer_org }}/tls/server.crt"
+
+  - from: "{{ orderer_dir }}/tls/tlscacerts/*"
+    to: "{{ orderer_dir }}/msp/tlscacerts/tlsca.{{ org }}.{{ domain }}-cert.pem"
+  - from: "{{ orderer_dir }}/tls/tlscacerts/*"
+    to: "{{ orderer_org }}/msp/tlscacerts/tlsca.{{ org }}.{{ domain }}-cert.pem"
+  - from: "{{ orderer_dir }}/tls/tlscacerts/*"
+    to: "{{ orderer_org }}/tlsca/tlsca.{{ domain }}-cert.pem"

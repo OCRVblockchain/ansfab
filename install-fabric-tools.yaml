@@ -1,3 +1,4 @@
+---
 - name: Install fabric-tools
   raw: "mkdir $HOME/fabric-tools && cd $HOME/fabric-tools &&
         curl -sSL https://bit.ly/2ysbOFE | bash -s &&

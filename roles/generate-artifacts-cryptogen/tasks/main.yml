@@ -1,0 +1,29 @@
+---
+# - name: Start cli container without crypto volumes
+#      raw: "docker-compose --file {{ docker_artifacts }}/docker-compose-{{ org }}.yaml up -d 'cliNoCryptoVolume.{{ org }}.{{ global_domain }}'"
+
+- name: Generate cryptogen configuration files from templates
+  template: src="{{ item.from }}" dest="{{ item.to }}"
+  loop: "{{ crypto_templates }}"
+
+- name: Generate crypto material with cryptogen
+  raw: "cryptogen generate --config=cryptogen-{{ org }}.yaml'"
+
+#- name: Generating orgConfig.json
+#  shell: 'configtxgen  -printOrg {{ org }}MSP > {{ org }}Config.json"'
+#  environment:
+#    FABRIC_CFG_PATH: $PWD
+
+#    - name: Changing artifacts ownership
+#      raw: "docker exec 'cliNoCryptoVolume.{{ org }}.{{ global_domain }}' bash -c 'chown -R {{ ansible_user_uid }}:{{ ansible_user_gid }} .'"
+#
+#- name: Create all folders for rsync
+#  file:
+#    path: "./artifacts/{{ item.to }}"
+#    state: directory
+#  loop: "{{ files_to_rsync_peer }}"
+#  delegate_to: localhost
+#
+#- name: Synchronize artifacts
+#  synchronize: src="{{ fabric_artifacts }}/{{ item.from }}" dest="./artifacts/{{ item.to }}" mode=pull recursive=yes
+#  loop: "{{ files_to_rsync_peer }}"

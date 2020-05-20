@@ -1,0 +1,11 @@
+---
+node_roles:
+  - orderer
+  - peer
+  - ca
+org: org1 # Organization name
+orderer_id: 1
+ansible_host: 80.249.147.91 # Real ip address or domain name of the machine
+ansible_user: root  # User with sudo access
+ansible_private_key_file: ~/.ssh/id_rsa # Private key to identify ourselves
+ansible_ssh_port: 22 # Specify ssh-port here, if case of it's not defaulted.

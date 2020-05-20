@@ -1,3 +1,0 @@
-- name: Install the package "npm"
-  apt:
-    name: npm

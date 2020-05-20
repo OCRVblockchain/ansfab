@@ -1,0 +1,37 @@
+---
+- name: Generate genesis artifacts
+  block:
+    - name: Generate genesis configuration files from templates
+      template: src="{{ item.from }}" dest="{{ item.to }}"
+      loop: "{{ genesis_template }}"
+
+#mkdir {{ local_artifacts }}/channel &&
+
+    - name: Generate genesis block
+      shell: "configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ local_artifacts }} -channelID initial -outputBlock {{ local_artifacts }}/channel/genesis.block"
+
+    - name: Generating channels config transactions, if any
+      raw: "configtxgen -profile {{ item.name }} -configPath {{ local_artifacts }} -outputCreateChannelTx {{ local_artifacts }}/channel/{{ item.name }}.tx -channelID {{ item.name }}"
+      loop: "{{ channels }}"
+      when: "channels is defined"
+
+  delegate_to: localhost
+  when: "'root_orderer' in node_roles"
+
+- name: Generate anchor peers updates
+  block:
+    - name: Generating anchor peer updates for other channels, if defined
+      raw: "configtxgen -profile {{ item.name }} -configPath {{ local_artifacts }} -outputAnchorPeersUpdate {{ local_artifacts }}/channel/{{ org }}MSPanchors-{{ item.name }}.tx -channelID {{ item.name }} -asOrg {{ org }}MSP"
+      loop: "{{ channels }}"
+      when: "channels is defined and org in item.particapants"
+
+  delegate_to: localhost
+  when: "'peer' in node_roles"
+
+- name: Synchronize artifacts
+  synchronize:
+    src: "{{ local_artifacts }}/channel"
+    dest: "{{ fabric_artifacts }}"
+    mode: push
+    recursive: yes
+  when: "'peer' in node_roles"

@@ -1,0 +1,11 @@
+---
+node_roles:
+  - orderer
+  - peer
+  - ca
+org: org2 # Organization name
+orderer_id: 2
+ansible_host: 5.101.50.111
+ansible_user: root  # User with sudo access
+ansible_private_key_file: ~/.ssh/id_rsa
+ansible_ssh_port: 22
