@@ -23,4 +23,4 @@ Step 1. ```sudo ansible-playbook -i inventory/nodes config-network.yml```.
 At this step, the crypto materials necessary for the further operation of the network will be generated. 
 
 Step 2. ```sudo ansible-playbook -i inventory/nodes start-network.yml```. 
-After this command, the network will be launched on the specified nodes
+After this command, the network will be launched on the specified nodes (```inventory/nodes``` dir)
