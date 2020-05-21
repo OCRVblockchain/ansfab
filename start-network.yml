@@ -6,6 +6,7 @@
     - start-orderer-containers
     - start-peer-containers
     - create-channels
+    - install-chaincode
 
 #---
 #- hosts: nodes

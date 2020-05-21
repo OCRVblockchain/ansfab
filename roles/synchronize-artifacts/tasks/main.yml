@@ -3,7 +3,7 @@
   file: path="{{ item }}" state=absent
   loop:
     - "{{ local_artifacts }}"
-    - "temp"
+    - "conn_params.txt"
   delegate_to: localhost
   when: "'root_orderer' in node_roles"
 

@@ -17,6 +17,7 @@
     files:
       - "docker-compose-ca-{{ org }}.yaml"
     remove_volumes: yes
+    remove_orphans: yes
     state: absent
 
 - name: Start CA container
@@ -24,7 +25,7 @@
     project_src: "{{ docker_artifacts }}"
     files:
       - "docker-compose-ca-{{ org }}.yaml"
-    restarted: yes
+    state: present
 
 # TODO: it might be worth using a docker module
 - name: Copy artifacts from CA

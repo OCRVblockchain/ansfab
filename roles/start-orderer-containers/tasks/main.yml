@@ -11,7 +11,7 @@
     files:
       - "docker-compose-orderer-{{ org }}.yaml"
     #remove_volumes: yes
-    remove_orphans: yes
+    #remove_orphans: yes
     state: absent
 
 - name: Start Orderer container
@@ -19,4 +19,4 @@
     project_src: "{{ docker_artifacts }}"
     files:
       - "docker-compose-orderer-{{ org }}.yaml"
-    restarted: yes
+    state: present

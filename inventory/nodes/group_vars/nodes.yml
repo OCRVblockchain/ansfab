@@ -1,5 +1,5 @@
 domain: example.dev
-chaincode_lang: javascript # Programming language of chaincode
+chaincode_lang: node # Programming language of chaincode
 chaincode_version: 1.0 # Your chaincode version
 channels:
   - name: common # Channel name
