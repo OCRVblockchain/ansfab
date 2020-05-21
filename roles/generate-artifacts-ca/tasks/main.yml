@@ -68,20 +68,6 @@
       shell: cp {{ item.from }} {{ item.to }}
       loop: "{{ peer_crypto_transfers }}"
 
-#    - name: Transfer Peer artifacts
-#      synchronize:
-#        src: "{{ item.from }}"
-#        dest: "{{ item.to }}"
-#        recursive: yes
-#        rsync_opts:
-#          - "--include=**.pem"
-#      loop: "{{ peer_crypto_transfers }}"
-#      delegate_to: "{{ inventory_hostname }}"
-
-#    - name: Transfer peer artifacts
-#      copy: src="{{ item.from }}" dest="{{ item.to }}" remote_src=yes
-#      loop: "{{ peer_crypto_transfers }}"
-
   environment:
     FABRIC_CA_CLIENT_HOME: "{{ registrar_peer }}"
 
@@ -110,79 +96,9 @@
       shell: cp {{ item.from }} {{ item.to }}
       loop: "{{ orderer_crypto_transfers }}"
 
-#    - name: Transfer Orderer artifacts
-#      synchronize:
-#        src: "{{ item.from }}"
-#        dest: "{{ item.to }}"
-#        recursive: yes
-#        rsync_opts:
-#          - "--include=**.pem"
-#      loop: "{{ orderer_crypto_transfers }}"
-#      delegate_to: "{{ inventory_hostname }}"
-
-#    - name: Transfer orderer artifacts
-#      copy: src="{{ item.from }}" dest="{{ item.to }}" remote_src=yes
-#      loop: "{{ orderer_crypto_transfers }}"
-
   environment:
     FABRIC_CA_CLIENT_HOME: "{{ registrar_orderer }}"
 
   when: "'orderer' in node_roles"
-
-
-
-#          - name: Copy to admincerts
-#            raw: "mkdir -p {{ orderer_org }}/msp/admincerts && cp {{ admin_orderer_dir }}/msp/signcerts/*.pem {{ orderer_org }}/msp/admincerts/"
-#
-#          - name: Prepare TLS folders (step 1)
-#            raw: "cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_dir }}/tls/ca.crt &&
-#                  cp {{ orderer_dir }}/tls/keystore/* {{ orderer_dir }}/tls/server.key &&
-#                  cp {{ orderer_dir }}/tls/signcerts/*.pem {{ orderer_dir }}/tls/server.crt &&
-#
-#                  mkdir {{ orderer_org }}/tls &&
-#
-#                  cp {{ orderer_dir }}/tls/tlscacerts/*.pem {{ orderer_org }}/tls/ca.crt &&
-#                  cp {{ orderer_dir }}/tls/keystore/* {{ orderer_org }}/tls/server.key &&
-#                  cp {{ orderer_dir }}/tls/signcerts/*.pem {{ orderer_org }}/tls/server.crt"
-#
-#          - name: Prepare TLS folders (step 2)
-#            raw: "mkdir {{ orderer_dir }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_dir }}/msp/tlscacerts/tlsca.{{ domain }}-cert.pem &&
-#
-#                  mkdir {{ orderer_org }}/msp/tlscacerts && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_org }}/msp/tlscacerts/tlsca.{{ domain }}-cert.pem &&
-#
-#                  mkdir {{ orderer_org }}/tlsca && cp {{ orderer_dir }}/tls/tlscacerts/* {{ orderer_org }}/tlsca/tlsca.{{ domain }}-cert.pem"
-
-       # when: "'ca' in node_roles"
-
-#  name: Copy to admincerts
-#  shell: "mkdir -p {{ peer_org }}/users/Admin@{{ org }}.{{ domain }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/users/Admin@{{ org }}.{{ domain }}/msp/admincerts"
-
-
-#  name: Copy to users/Admin@<org>.<domain>/msp/admincerts
-#  file: src="{{ admin_dir }}/msp/signcerts/*.pem" dest="{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}/msp/admincerts"
-#
-#  name: Copy to admincerts
-#  file: src="{{ admin_dir }}/msp/signcerts/*.pem" dest="{{ peer_org }}/msp/admincerts/"
-
-            #raw: "mkdir -p {{ peer_org }}/msp/admincerts && cp {{ admin_dir }}/msp/signcerts/*.pem {{ peer_org }}/msp/admincerts/"
-
-#          - name: Prepare TLS folders (step 1)
-#            raw: "cp {{ peer_dir }}/tls/tlscacerts/*.pem {{ peer_dir }}/tls/ca.crt &&
-#                  cp {{ peer_dir }}/tls/keystore/* {{ peer_dir }}/tls/server.key &&
-#                  cp {{ peer_dir }}/tls/signcerts/*.pem {{ peer_dir }}/tls/server.crt &&
-#                  mkdir {{ peer_org }}/tls &&
-#                  cp {{ peer_dir }}/tls/tlscacerts/*.pem {{ peer_org }}/tls/ca.crt &&
-#                  cp {{ peer_dir }}/tls/keystore/* {{ peer_org }}/tls/server.key &&
-#                  cp {{ peer_dir }}/tls/signcerts/*.pem {{ peer_org }}/tls/server.crt"
-#
-#          - name: Prepare TLS folders (step 2)
-#            raw: "mkdir {{ peer_org }}/msp/tlscacerts && cp {{ peer_dir }}/tls/tlscacerts/* {{ peer_org }}/msp/tlscacerts/ca.crt &&
-#                  mkdir {{ peer_org }}/tlsca && cp {{ peer_dir }}/tls/tlscacerts/* {{ peer_org }}/tlsca/tlsca.{{ org }}.{{ domain }}-cert.pem &&
-#                  mkdir {{ peer_org }}/ca && cp {{ peer_dir }}/msp/cacerts/* {{ peer_org }}/ca/ca.{{ org }}.{{ domain }}-cert.pem"
-
-          # Generate orderer artifacts:
-
-
-
 
 
