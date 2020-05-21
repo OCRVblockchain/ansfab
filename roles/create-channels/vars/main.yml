@@ -1,0 +1,13 @@
+---
+with_tls_cert: "--tls.certfiles  {{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}/ca/fabric-ca-server/tls-cert.pem"
+
+fabric_starter_workdir: "/home/{{ ansible_user }}/{{ project_name }}"
+
+fabric_artifacts: "{{ fabric_starter_workdir }}/crypto-config"
+local_artifacts: "./artifacts"
+
+peer_org: "{{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}"
+orderer_org: "{{ fabric_artifacts }}/ordererOrganizations/{{ domain }}"
+
+peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ domain }}"
+admin_dir: "{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}"

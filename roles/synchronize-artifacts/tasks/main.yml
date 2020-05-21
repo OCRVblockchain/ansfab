@@ -10,12 +10,6 @@
 - name: Synchronize orderer artifacts
   block:
 
-#        - name: Transfer orderer configuration files
-#          template:
-#            src: "{{ item.from }}"
-#            dest: "{{ item.to }}"
-#          loop: "{{ orderer_templates }}"
-
     - name: Create all folders for rsync..
       file: path="{{ item.to }}" state=directory
       loop: "{{ files_to_rsync_orderer }}"

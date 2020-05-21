@@ -5,8 +5,6 @@
       template: src="{{ item.from }}" dest="{{ item.to }}"
       loop: "{{ genesis_template }}"
 
-#mkdir {{ local_artifacts }}/channel &&
-
     - name: Generate genesis block
       shell: "configtxgen -profile OrdererGenesisEtcdRaft -configPath {{ local_artifacts }} -channelID initial -outputBlock {{ local_artifacts }}/channel/genesis.block"
 

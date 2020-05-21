@@ -11,7 +11,7 @@
   template: src="{{ item.from }}" dest="{{ item.to }}"
   loop: "{{ ca_templates }}"
 
-- name: Stop oldest CA container
+- name: Tear down existing CA container
   docker_compose:
     project_src: "{{ docker_artifacts }}"
     files:
@@ -63,9 +63,23 @@
 
     # Transfer peer artifacts to canonical Fabric paths
 
-    - name: Transfer peer artifacts
-      file: src="{{ item.from }}" dest="{{ item.to }}" state=touch
+    - name: Transfer Peer artifacts
+      shell: cp {{ item.from }} {{ item.to }}
       loop: "{{ peer_crypto_transfers }}"
+
+#    - name: Transfer Peer artifacts
+#      synchronize:
+#        src: "{{ item.from }}"
+#        dest: "{{ item.to }}"
+#        recursive: yes
+#        rsync_opts:
+#          - "--include=**.pem"
+#      loop: "{{ peer_crypto_transfers }}"
+#      delegate_to: "{{ inventory_hostname }}"
+
+#    - name: Transfer peer artifacts
+#      copy: src="{{ item.from }}" dest="{{ item.to }}" remote_src=yes
+#      loop: "{{ peer_crypto_transfers }}"
 
   environment:
     FABRIC_CA_CLIENT_HOME: "{{ registrar_peer }}"
@@ -91,9 +105,23 @@
 
     # Transfer orderer artifacts to canonical Fabric paths
 
-    - name: Transfer orderer artifacts
-      file: src="{{ item.from }}" dest="{{ item.to }}" state=touch
+    - name: Transfer Peer artifacts
+      shell: cp {{ item.from }} {{ item.to }}
       loop: "{{ orderer_crypto_transfers }}"
+
+#    - name: Transfer Orderer artifacts
+#      synchronize:
+#        src: "{{ item.from }}"
+#        dest: "{{ item.to }}"
+#        recursive: yes
+#        rsync_opts:
+#          - "--include=**.pem"
+#      loop: "{{ orderer_crypto_transfers }}"
+#      delegate_to: "{{ inventory_hostname }}"
+
+#    - name: Transfer orderer artifacts
+#      copy: src="{{ item.from }}" dest="{{ item.to }}" remote_src=yes
+#      loop: "{{ orderer_crypto_transfers }}"
 
   environment:
     FABRIC_CA_CLIENT_HOME: "{{ registrar_orderer }}"

@@ -76,12 +76,12 @@ couchdb_port: 5984
 #orderer_templates:
 #  - from: "configtxtemplate.yaml"
 #    to: "{{ fabric_artifacts }}/configtx.yaml"
-#  - from: "docker-compose-orderer-template.yaml"
+#  - from: "docker-compose-orderer-template.j2"
 #    to: "{{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml"
 #
 #peer_templates:
-#  - from: "base.yaml"
-#    to: "{{ docker_artifacts }}/base.yaml"
+#  - from: "base.j2"
+#    to: "{{ docker_artifacts }}/base.j2"
 #  - from: "docker-compose-peer-template.yaml"
 #    to: "{{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml"
 #

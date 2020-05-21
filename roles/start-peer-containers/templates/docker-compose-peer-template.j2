@@ -2,19 +2,19 @@ version: '2'
 
 services:
 
-  peer0.{{ org }}.{{ global_domain }}:
-    container_name: peer0.{{ org }}.{{ global_domain }}
+  peer0.{{ org }}.{{ domain }}:
+    container_name: peer0.{{ org }}.{{ domain }}
     extends:
       file: base.yaml
       service: peer-base
     environment:
-      - CORE_PEER_ID=peer0.{{ org }}.{{ global_domain }}
-      - CORE_PEER_ADDRESS=peer0.{{ org }}.{{ global_domain }}:7051
+      - CORE_PEER_ID=peer0.{{ org }}.{{ domain }}
+      - CORE_PEER_ADDRESS=peer0.{{ org }}.{{ domain }}:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.{{ org }}.{{ global_domain }}:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.{{ org }}.{{ domain }}:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.{{ org }}.{{ global_domain }}:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.{{ org }}.{{ global_domain }}:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.{{ org }}.{{ domain }}:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.{{ org }}.{{ domain }}:7051
       - CORE_PEER_LOCALMSPID={{ org }}MSP
     ports:
       - {{ peer0_port }}:7051
@@ -22,24 +22,24 @@ services:
       - /var/run/:/host/var/run/
       - {{ peer_org }}:/etc/hyperledger/crypto/peer
       #- {{ peer_dir }}/tls:/etc/hyperledger/crypto/peer/tls
-      #- peer0.{{ org }}.{{ global_domain }}:/var/hyperledger/production
+      #- peer0.{{ org }}.{{ domain }}:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     extra_hosts:
 {% for fabric_host in groups['nodes'] %}
 {% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
 {% if 'orderer' in hostvars[fabric_host].node_roles %}
-      -  orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+      -  orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ domain }}:{{ hostvars[fabric_host].ansible_host }}
 {% endif %}
 {% if 'peer' in hostvars[fabric_host].node_roles %}
-      -  peer0.{{ hostvars[fabric_host].org }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+      -  peer0.{{ hostvars[fabric_host].org }}.{{ domain }}:{{ hostvars[fabric_host].ansible_host }}
 {% endif %}
 {% endif %}
 {% endfor %}
 
 {% if use_couchdb == 'yes' %}
-  couchdb.{{ org }}.{{ global_domain }}:
-    container_name: couchdb.{{ org }}.{{ global_domain }}
+  couchdb.{{ org }}.{{ domain }}:
+    container_name: couchdb.{{ org }}.{{ domain }}
     image: hyperledger/fabric-couchdb:{{ fabric_thirdparty_version }}
     restart: {{ docker_restart_policy }}
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password

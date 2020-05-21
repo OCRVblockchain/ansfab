@@ -1,0 +1,13 @@
+---
+fabric_starter_workdir: "/home/{{ ansible_user }}/{{ project_name }}"
+
+docker_artifacts: "{{ fabric_starter_workdir }}/dockercompose"
+
+peer_org: "{{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}"
+peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ domain }}"
+
+peer_templates:
+  - from: "base.j2"
+    to: "{{ docker_artifacts }}/base.yaml"
+  - from: "docker-compose-peer-template.j2"
+    to: "{{ docker_artifacts }}/docker-compose-peer-{{ org }}.yaml"

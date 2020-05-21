@@ -1,0 +1,22 @@
+---
+- name: Transfer Peer configuration files
+  template:
+    src: "{{ item.from }}"
+    dest: "{{ item.to }}"
+  loop: "{{ peer_templates }}"
+
+- name: Tear down existing Peer container
+  docker_compose:
+    project_src: "{{ docker_artifacts }}"
+    files:
+      - "docker-compose-peer-{{ org }}.yaml"
+    #remove_volumes: yes
+    remove_orphans: yes
+    state: absent
+
+- name: Start Peer container
+  docker_compose:
+    project_src: "{{ docker_artifacts }}"
+    files:
+      - "docker-compose-peer-{{ org }}.yaml"
+    restarted: yes

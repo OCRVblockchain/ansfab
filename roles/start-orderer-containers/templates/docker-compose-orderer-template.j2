@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  orderer{{ orderer_id | default() }}.{{ global_domain }}:
-    container_name: orderer{{ orderer_id | default() }}.{{ org }}.{{ global_domain }}
+  orderer{{ orderer_id | default() }}.{{ domain }}:
+    container_name: orderer{{ orderer_id | default() }}.{{ org }}.{{ domain }}
     restart: always
     image: hyperledger/fabric-orderer:latest
     environment:
@@ -31,7 +31,7 @@ services:
 {% for fabric_host in groups['nodes'] %}
 {% if hostvars[fabric_host].inventory_hostname|string() != inventory_hostname|string() %}
 {% if 'orderer' in hostvars[fabric_host].node_roles %}
-      - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ global_domain }}:{{ hostvars[fabric_host].ansible_host }}
+      - orderer{{ hostvars[fabric_host].orderer_id | default() }}.{{ domain }}:{{ hostvars[fabric_host].ansible_host }}
 {% endif %}
 {% endif %}
 {% endfor %}

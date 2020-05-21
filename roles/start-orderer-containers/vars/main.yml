@@ -1,0 +1,12 @@
+---
+fabric_starter_workdir: "/home/{{ ansible_user }}/{{ project_name }}"
+
+docker_artifacts: "{{ fabric_starter_workdir }}/dockercompose"
+fabric_artifacts: "{{ fabric_starter_workdir }}/crypto-config"
+
+orderer_org: "{{ fabric_artifacts }}/ordererOrganizations/{{ domain }}"
+orderer_dir: "{{ orderer_org }}/orderers/orderer{{ orderer_id | default() }}.{{ domain }}"
+
+orderer_templates:
+  - from: "docker-compose-orderer-template.j2"
+    to: "{{ docker_artifacts }}/docker-compose-orderer-{{ org }}.yaml"
