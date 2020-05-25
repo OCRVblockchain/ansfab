@@ -38,12 +38,15 @@ fabric_artifacts_folders:
   - "{{ peer_dir }}/tls"
   - "{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}/msp/admincerts"
 
-
 ca_templates:
   - from: "fabric-ca-server-config-template.j2"
     to: "{{ ca_dir }}/fabric-ca-server-{{ org }}.yaml"
   - from: "docker-compose-ca-template.j2"
     to: "{{ docker_artifacts }}/docker-compose-ca-{{ org }}.yaml"
+
+ccp_templates:
+  - from: "ccp-template.j2"
+    to: "{{ fabric_starter_workdir }}/connection-{{ org }}.json"
 
 peer_crypto_transfers:
   - from: "{{ admin_dir }}/msp/signcerts/cert.pem"

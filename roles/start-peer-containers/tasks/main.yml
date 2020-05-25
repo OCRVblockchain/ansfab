@@ -10,7 +10,7 @@
     project_src: "{{ docker_artifacts }}"
     files:
       - "docker-compose-peer-{{ org }}.yaml"
-    #remove_volumes: yes
+    remove_volumes: yes
     #remove_orphans: yes
     state: absent
 

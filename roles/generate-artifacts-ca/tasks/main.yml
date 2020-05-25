@@ -101,4 +101,19 @@
 
   when: "'orderer' in node_roles"
 
+- name: Generate CCP files
+  block:
 
+    - name: Prepare Peer pem cert
+      raw: awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' {{ peer_dir }}/tls/ca.crt
+      register: peer_pem
+
+    - name: Prepare CA pem cert
+      raw: awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' {{ peer_dir }}/tls/ca.crt
+      register: ca_pem
+
+    - name: Generate CCP files from templates
+      template: src="{{ item.from }}" dest="{{ item.to }}"
+      loop: "{{ ccp_templates }}"
+
+  when: "'peer' in node_roles"
