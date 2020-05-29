@@ -8,6 +8,6 @@ ca_port: 7054
 peer0_port: 7051
 
 # Use couchdb in peers instead of leveldb
-#use_couchdb: 'yes'
-use_couchdb: 'no'
+use_couchdb: 'yes'
+#use_couchdb: 'no'
 couchdb_port: 5984
