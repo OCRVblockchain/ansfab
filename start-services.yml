@@ -1,9 +1,0 @@
----
-- hosts: nodes
-  become: true
-
-  roles:
-    # - start-elasticsearch
-    # - start-logstash
-    # - elastic-rest
-    - start-front

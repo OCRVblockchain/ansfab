@@ -1,4 +1,0 @@
-elastic:
-  user: ""
-  password: ""
-  index: "rails"
