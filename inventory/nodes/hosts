@@ -1,4 +1,4 @@
-localhost ansible_ssh_user= ansible_ssh_pass= ansible_become_pass=
+localhost ansible_ssh_user=deniskozlov ansible_ssh_pass=joo0shaij ansible_become_pass=joo0shaij
 
 [vscale]
 org0.example.dev
