@@ -1,0 +1,9 @@
+- pipeline.id: FABRIC
+  pipeline.workers: 1
+  pipeline.batch.size: 1
+  path.config: "./config/pipelines/fabric_pipeline.conf"
+
+- pipeline.id: APP
+  pipeline.workers: 1
+  pipeline.batch.size: 1
+  path.config: "./config/pipelines/app_pipeline.conf"

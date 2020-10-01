@@ -1,0 +1,9 @@
+При первом запуске создать и отредактировать файл .env:
+cp .env.default .env
+nano .env <-- NB: put your IP there, in api_host!
+
+Запустить:
+npm install && npm run start
+
+или в докере:
+docker build -t wheelfront . && docker run --rm -p 8081:8081 wheelfront

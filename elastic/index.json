@@ -1,0 +1,77 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "id_analyzer": {
+          "type": "custom",
+          "tokenizer": "whitespace",
+          "filter": [
+            "word_delimeter",
+            "tokenfilter_ngram"
+          ]
+        },
+        "id_analyzer2": {
+          "type": "custom",
+          "tokenizer": "whitespace",
+          "filter": [
+            "word_delimeter"
+          ]
+        },
+        "ng_analyzer": {
+          "type": "custom",
+          "tokenizer": "whitespace",
+          "filter": [
+            "lowercase",
+            "tokenfilter_ngram"
+          ]
+        }
+      },
+      "filter": {
+        "word_delimeter": {
+          "type": "word_delimiter",
+          "generate_number_parts": true,
+          "catenate_words": true,
+          "catenate_numbers": true,
+          "preserve_original": true
+        },
+        "tokenfilter_ngram": {
+          "type": "nGram",
+          "min_gram": "1",
+          "max_gram": "2"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "doc.id": {
+        "type": "text",
+        "fields": {
+          "test": {
+            "type": "text",
+            "analyzer": "id_analyzer"
+          },
+          "test2": {
+            "type": "text",
+            "analyzer": "id_analyzer2"
+          },
+          "keyword" : {
+            "type": "keyword"
+          }
+        }
+      },
+      "doc.payload": {
+        "type": "text",
+        "fields": {
+          "test": {
+            "type": "text",
+            "analyzer": "ng_analyzer"
+          },
+          "keyword" : {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
