@@ -1,5 +1,13 @@
-# AnsFab
+# Ansible Fabric
 Ansible-based utility for easy Hyperledger Fabric deployment
+
+# Quick overview:
+* Hyperledger Fabric v2.0
+* Generating crypto materials on Fabric CA
+* TLS on all nodes
+* Raft consensus
+* CouchDB or LevelDB database
+* Configurable amount of organizations and channels
 
 ## Technical requirements:
 Your machine should have:
