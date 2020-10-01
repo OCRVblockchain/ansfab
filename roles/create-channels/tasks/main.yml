@@ -6,6 +6,12 @@
     - name: Copying core.yaml to FABRIC_CFG_PATH
       shell: "docker cp peer0.{{ org }}.{{ domain }}:/etc/hyperledger/fabric/core.yaml ."
 
+    - name: Fetch core.yaml to master
+      run_once: yes
+      fetch: src=./core.yaml dest=./ flat=yes
+      loop: "{{ channels }}"
+      when: "org in item.particapants[0]"
+
     - name: Creating channels
       shell: "peer channel create \
             -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 \
