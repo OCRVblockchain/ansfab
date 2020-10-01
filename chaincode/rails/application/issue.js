@@ -62,7 +62,7 @@ async function main() {
         // Get addressability to commercial paper contract
         console.log('Use org.papernet.commercialpaper smart contract.');
 
-        const contract = await network.getContract('fabcar');
+        const contract = await network.getContract('rails');
 
         // issue commercial paper
         console.log('Submit commercial paper issue transaction.');

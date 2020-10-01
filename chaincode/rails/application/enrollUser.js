@@ -13,7 +13,7 @@ const path = require('path');
 async function main() {
     try {
 
-        const jsonString = fs.readFileSync('../../../crypto-config/connection-org0.json', 'utf8')
+        const jsonString = fs.readFileSync('../../../connection-org0.json', 'utf8')
         const connectionProfile = JSON.parse(jsonString)
         // load the network configuration
         //let connectionProfile = yaml.safeLoad(fs.readFileSync('../crypto-config/connection-org0.json', 'utf8'));

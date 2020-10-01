@@ -7,18 +7,18 @@
 
 - name: Install chaincode dependencies via npm
   npm:
-    path: "{{ fabric_starter_workdir }}/chaincode/fabcar/javascript"
+    path: "{{ fabric_starter_workdir }}/chaincode/rails/contract/javascript"
 
 - name: Install chaincode - phase 1
   block:
 
     - name: Package chaincode
-      shell: 'peer lifecycle chaincode package fabcar.tar.gz --path {{ fabric_starter_workdir }}/chaincode/fabcar/javascript/ --lang node --label fabcar_1'
+      shell: 'peer lifecycle chaincode package rails.tar.gz --path {{ fabric_starter_workdir }}/chaincode/rails/contract/javascript/ --lang node --label rails_1'
       when: "org in item.particapants"
       loop: "{{ channels }}"
 
     - name: Install chaincode
-      shell: 'peer lifecycle chaincode install fabcar.tar.gz'
+      shell: 'peer lifecycle chaincode install rails.tar.gz'
 
     - name: Queryinstalled output &> log.txt
       raw: 'export CORE_PEER_TLS_ENABLED=true &&
@@ -36,7 +36,7 @@
         var: output
 
     - name: Approve for org
-      shell: 'peer lifecycle chaincode approveformyorg -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ domain }}-cert.pem --channelID {{ item.name }} --name fabcar --version 1 --init-required --package-id $(sed -n "/fabcar_1/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt) --sequence 1 &> log2.txt'
+      shell: 'peer lifecycle chaincode approveformyorg -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ orderer_org }}/tlsca/tlsca.{{ domain }}-cert.pem --channelID {{ item.name }} --name rails --version 1 --init-required --package-id $(sed -n "/rails_1/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt) --sequence 1 &> log2.txt'
       loop: "{{ channels }}"
 
   environment:
@@ -54,12 +54,12 @@
   block:
 
     - name: Commit chaincode
-      shell: 'peer lifecycle chaincode commit -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ local_orderer_dir }}/tlsca/tlsca.{{ domain }}-cert.pem --channelID {{ item.name }} --name fabcar --version 1 --sequence 1 --init-required $(cat ./conn_params.txt) &> log3.txt'
+      shell: 'peer lifecycle chaincode commit -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ local_orderer_dir }}/tlsca/tlsca.{{ domain }}-cert.pem --channelID {{ item.name }} --name rails --version 1 --sequence 1 --init-required $(cat ./conn_params.txt) &> log3.txt'
       when: "org in item.particapants[0]"
       loop: "{{ channels }}"
 
     - name: Invoke chaincode
-      shell: "peer chaincode invoke -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ local_orderer_dir }}/tlsca/tlsca.{{ domain }}-cert.pem -C {{ item.name }} -n fabcar $(cat ./conn_params.txt) --isInit -c '{\"function\":\"initLedger\",\"Args\":[]}'"
+      shell: "peer chaincode invoke -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ local_orderer_dir }}/tlsca/tlsca.{{ domain }}-cert.pem -C {{ item.name }} -n rails $(cat ./conn_params.txt) --isInit -c '{\"function\":\"create\",\"Args\":[\"rail\",\"10\",\"\"]}'"
       when: "org in item.particapants[0]"
       loop: "{{ channels }}"
 
@@ -75,7 +75,7 @@
   shell: "sleep 20"
 
 - name: Query chaincode
-  shell: "peer chaincode query -C {{ item.name }} -n fabcar -c '{\"Args\":[\"queryAllCars\"]}' &> res.txt"
+  shell: "peer chaincode query -C {{ item.name }} -n rails -c '{\"Args\":[\"getTest\"]}' &> res.txt"
   environment:
     CORE_PEER_TLS_ENABLED: "true"
     CORE_PEER_LOCALMSPID: "{{ org }}MSP"
