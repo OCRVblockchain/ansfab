@@ -19,14 +19,14 @@ Provisioned nodes by ansible should have:
 * python
 * sudo access
 
-## Ports, used by default, you probably want to whitelist them in your firewall.
-
 ### Ports, needed for blockchain instances to communicate with each other:
 
 * **7050** - Hyperledger fabric orderer port
 * **7054** - Hyperledger fabric CA port
 * **7051** - Hyperledger fabric peer port
 * **22** - ssh, or any other port number, needed for inital ansible deployment only
+
+Ports, used by default, you probably want to whitelist them in your firewall.
 
 If you are deploying for the first time, run:
 ```sudo ansible-playbook -i inventory/nodes install-dependencies.yml```
