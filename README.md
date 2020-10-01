@@ -14,6 +14,11 @@ Your machine should have:
 * GNU/Linux or MacOS operating system
 * Ansible 2.5.0+ 
 
+Provisioned nodes by ansible should have:
+* Ubuntu 16.04
+* python
+* sudo access
+
 ## Ports, used by default, you probably want to whitelist them in your firewall.
 
 ### Ports, needed for blockchain instances to communicate with each other:
