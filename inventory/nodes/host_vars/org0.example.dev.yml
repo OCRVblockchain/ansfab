@@ -1,0 +1,12 @@
+---
+node_roles:
+  - root_orderer # This node will be used to generate crypto-config for other orderers
+  - orderer
+  - peer
+  - ca
+org: org0 # Organization name
+orderer_id: 0
+ansible_host: 31.184.253.134 # Real ip address or domain name of the machine
+ansible_user: root  # User with sudo access
+ansible_private_key_file: ~/.ssh/id_rsa # Private key to identify ourselves
+ansible_ssh_port: 22 # Specify ssh-port here, if case of it's not defaulted.

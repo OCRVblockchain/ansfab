@@ -1,0 +1,4 @@
+---
+crypto_templates:
+  - from: "artifact-templates/cryptogentemplate-peer.yaml"
+    to: "{{ fabric_artifacts }}/cryptogen-{{ org }}.yaml"

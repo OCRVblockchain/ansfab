@@ -1,0 +1,9 @@
+---
+fabric_starter_workdir: "/home/{{ ansible_user }}/{{ project_name }}"
+
+fabric_artifacts: "{{ fabric_starter_workdir }}/crypto-config"
+local_artifacts: "./artifacts"
+
+genesis_template:
+  - from: "configtxtemplate.yaml"
+    to: "{{ local_artifacts }}/configtx.yaml"

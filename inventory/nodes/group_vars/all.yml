@@ -1,0 +1,13 @@
+---
+project_name: "example"
+
+# Default HL fabric ports
+orderer_port: 7050
+api_port: 4000
+ca_port: 7054
+peer0_port: 7051
+
+# Use couchdb in peers instead of leveldb
+use_couchdb: 'yes'
+#use_couchdb: 'no'
+couchdb_port: 5984

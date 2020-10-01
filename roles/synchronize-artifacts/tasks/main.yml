@@ -1,0 +1,53 @@
+---
+- name: Clean local artifacts
+  file: path="{{ item }}" state=absent
+  loop:
+    - "{{ local_artifacts }}"
+    - "conn_params.txt"
+  delegate_to: localhost
+  when: "'root_orderer' in node_roles"
+
+- name: Synchronize orderer artifacts
+  block:
+
+    - name: Create all folders for rsync..
+      file: path="{{ item.to }}" state=directory
+      loop: "{{ files_to_rsync_orderer }}"
+      delegate_to: localhost
+
+    - name: Synchronize orderer artifacts
+      synchronize:
+        src: "{{ item.from }}"
+        dest: "{{ item.to }}"
+        mode: pull
+        recursive: yes
+      loop: "{{ files_to_rsync_orderer }}"
+
+    - name: Synchronize root orderer MSP
+      synchronize:
+        src: "{{ item.from }}"
+        dest: "{{ item.to }}"
+        mode: pull
+        recursive: yes
+      loop: "{{ files_to_rsync_root_orderer }}"
+      when: "'root_orderer' in node_roles"
+
+  when: "'orderer' in node_roles"
+
+- name: Synchronize peer artifacts
+  block:
+
+    - name: Create all folders for rsync..
+      file: path="{{ item.to }}" state=directory
+      loop: "{{ files_to_rsync_peer }}"
+      delegate_to: localhost
+
+    - name: Synchronize peer artifacts
+      synchronize:
+        src: "{{ item.from }}"
+        dest: "{{ item.to }}"
+        mode: pull
+        recursive: yes
+      loop: "{{ files_to_rsync_peer }}"
+
+  when: "'peer' in node_roles"

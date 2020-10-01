@@ -32,6 +32,7 @@ module.exports = {
         'no-with': 'error',
         'operator-linebreak': 'error',
         yoda: 'error',
-        'quote-props': ['error', 'as-needed']
+        'quote-props': ['error', 'as-needed'],
+        'no-constant-condition': ["error", { "checkLoops": false }]
     }
 };

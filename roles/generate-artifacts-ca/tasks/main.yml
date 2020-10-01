@@ -1,0 +1,119 @@
+---
+- name: Clean all config folders
+  file: path="{{ item }}" state=absent
+  loop: "{{ fabric_artifacts_folders }}"
+
+- name: Ensures all dir exists
+  file: path="{{ item }}" state=directory
+  loop: "{{ fabric_artifacts_folders }}"
+
+- name: Generate CA configuration files from templates
+  template: src="{{ item.from }}" dest="{{ item.to }}"
+  loop: "{{ ca_templates }}"
+
+- name: Tear down existing CA container
+  docker_compose:
+    project_src: "{{ docker_artifacts }}"
+    files:
+      - "docker-compose-ca-{{ org }}.yaml"
+    remove_volumes: yes
+    remove_orphans: yes
+    state: absent
+
+- name: Start CA container
+  docker_compose:
+    project_src: "{{ docker_artifacts }}"
+    files:
+      - "docker-compose-ca-{{ org }}.yaml"
+    state: present
+
+# TODO: it might be worth using a docker module
+- name: Copy artifacts from CA
+  shell: "docker cp ca.{{ org }}.{{ domain }}:/etc/hyperledger/fabric-ca-server {{ ca_dir }}"
+
+- name: Generatins artifacts for peer nodes
+  block:
+
+    # Register identites:
+
+    - name: Enroll the CA admin
+      shell: "fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 {{ with_tls_cert }}"
+
+    - name: Register the org admin
+      shell: "fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://localhost:7054 {{ with_tls_cert }}"
+
+    - name: Register peer0
+      shell: "fabric-ca-client register --id.name peer0 --id.secret peerpw --id.type peer -u https://localhost:7054 {{ with_tls_cert }}"
+
+    - name: Register orderer
+      shell: "fabric-ca-client register --id.name orderer --id.secret ordererpw --id.type orderer -u https://localhost:7054 {{ with_tls_cert }}"
+
+    - name: Register the orderer admin
+      shell: "fabric-ca-client register --id.name ordererAdmin --id.secret ordereradminpw --id.type admin -u https://localhost:7054 {{ with_tls_cert }}"
+
+    # Generate peer artifacts:
+
+    - name: Enroll the org admin
+      shell: "fabric-ca-client enroll -u https://{{ org }}admin:adminpw@localhost:7054 -M {{ admin_dir }}/msp {{ with_tls_cert }}"
+
+    - name: Enroll the peer0
+      shell: "fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts peer0.{{ org }}.{{ domain }} -M {{ peer_dir }}/msp {{ with_tls_cert }}"
+
+    - name: Enroll the peer0 TLS
+      shell: "fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts peer0.{{ org }}.{{ domain }} --enrollment.profile tls -M {{ peer_dir }}/tls {{ with_tls_cert }}"
+
+    # Transfer peer artifacts to canonical Fabric paths
+
+    - name: Transfer Peer artifacts
+      shell: cp {{ item.from }} {{ item.to }}
+      loop: "{{ peer_crypto_transfers }}"
+
+  environment:
+    FABRIC_CA_CLIENT_HOME: "{{ registrar_peer }}"
+
+  when: "'peer' in node_roles"
+
+- name: Generatins artifacts for orderer nodes
+  block:
+
+    # Generate orderer artifacts:
+
+    - name: Enroll the CA admin
+      shell: " fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 {{ with_tls_cert }}"
+
+    - name: Enroll the orderer
+      shell: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ domain }} -M {{ orderer_dir }}/msp {{ with_tls_cert }}"
+
+    - name: Enroll the orderer TLS
+      shell: "fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ domain }} -M {{ orderer_dir }}/tls --enrollment.profile tls {{ with_tls_cert }}"
+
+    - name: Enroll the orderer admin
+      shell: "fabric-ca-client enroll -u https://ordererAdmin:ordereradminpw@localhost:7054  -M {{ admin_orderer_dir }}/msp {{ with_tls_cert }}"
+
+    # Transfer orderer artifacts to canonical Fabric paths
+
+    - name: Transfer Peer artifacts
+      shell: cp {{ item.from }} {{ item.to }}
+      loop: "{{ orderer_crypto_transfers }}"
+
+  environment:
+    FABRIC_CA_CLIENT_HOME: "{{ registrar_orderer }}"
+
+  when: "'orderer' in node_roles"
+
+- name: Generate CCP files
+  block:
+
+    - name: Prepare Peer pem cert
+      raw: awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' {{ peer_dir }}/tls/ca.crt
+      register: peer_pem
+
+    - name: Prepare CA pem cert
+      raw: awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' {{ peer_dir }}/tls/ca.crt
+      register: ca_pem
+
+    - name: Generate CCP files from templates
+      template: src="{{ item.from }}" dest="{{ item.to }}"
+      loop: "{{ ccp_templates }}"
+
+  when: "'peer' in node_roles"

@@ -1,0 +1,49 @@
+{
+    "name": "{{ project_name }}-network-{{ org }}",
+    "version": "1.0.0",
+    "client": {
+        "organization": "{{ org }}",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300"
+                }
+            }
+        }
+    },
+    "organizations": {
+        "{{ org }}": {
+            "mspid": "{{ org }}MSP",
+            "peers": [
+                "peer0.{{ org }}.{{ domain }}"
+            ],
+            "certificateAuthorities": [
+                "ca.{{ org }}.{{ domain }}"
+            ]
+        }
+    },
+    "peers": {
+        "peer0.{{ org }}.{{ domain }}": {
+            "url": "grpcs://localhost:{{ peer0_port }}",
+            "tlsCACerts": {
+                "pem": "{{ peer_pem.stdout }}"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.{{ org }}.{{ domain }}",
+                "hostnameOverride": "peer0.{{ org }}.{{ domain }}"
+            }
+        }
+    },
+    "certificateAuthorities": {
+        "ca.{{ org }}.{{ domain }}": {
+            "url": "https://localhost:{{ ca_port }}",
+            "caName": "",
+            "tlsCACerts": {
+                    "pem": "{{ ca_pem.stdout }}"
+            },
+            "httpOptions": {
+                "verify": false
+            }
+        }
+    }
+}

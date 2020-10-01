@@ -1,0 +1,14 @@
+domain: example.dev
+chaincode_lang: node # Programming language of chaincode
+chaincode_version: 1.0 # Your chaincode version
+channels:
+  - name: common # Channel name
+    particapants: # Organizations, should be included in channel
+      - org0
+      - org1
+      - org2
+    chaincode: # Chaincode params
+      name: fabcar
+      version: "{{ chaincode_version }}"
+      policy: ""
+      init: '{"Args":["init","a","100","b","100"]}'

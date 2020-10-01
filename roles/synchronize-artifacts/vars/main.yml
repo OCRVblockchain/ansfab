@@ -1,0 +1,42 @@
+---
+fabric_starter_workdir: "/home/{{ ansible_user }}/{{ project_name }}"
+
+fabric_artifacts: "{{ fabric_starter_workdir }}/crypto-config"
+local_artifacts: "./artifacts"
+
+orderer_org: "{{ fabric_artifacts }}/ordererOrganizations/{{ domain }}"
+local_orderer_org: "{{ local_artifacts }}/ordererOrganizations/{{ domain }}"
+
+peer_org: "{{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}"
+local_peer_org: "{{ local_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}"
+
+orderer_dir: "{{ orderer_org }}/orderers/orderer{{ orderer_id | default() }}.{{ domain }}"
+local_orderer_dir: "{{ local_orderer_org }}/orderers/orderer{{ orderer_id | default() }}.{{ domain }}"
+
+peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ domain }}"
+local_peer_dir: "{{ local_peer_org }}/peers/peer0.{{ org }}.{{ domain }}"
+
+admin_dir: "{{ peer_org }}/users/Admin@{{ org }}.{{ domain }}"
+local_admin_dir: "{{ local_peer_org }}/users/Admin@{{ org }}.{{ domain }}"
+
+files_to_rsync_peer:
+  - from: "{{ peer_org }}/msp"
+    to: "{{ local_peer_org }}"
+  - from: "{{ peer_dir }}/tls/ca.crt"
+    to: "{{ local_peer_dir }}/tls"
+  - from: "{{ peer_org }}/tlsca/tlsca.{{ org }}.{{ domain }}-cert.pem"
+    to: "{{ local_peer_dir }}/msp/tlscacerts"
+  - from: "{{ admin_dir }}/msp"
+    to: "{{ local_admin_dir }}"
+
+files_to_rsync_root_orderer:
+  - from: "{{ orderer_org }}/msp"
+    to: "{{ local_orderer_org }}"
+
+files_to_rsync_orderer:
+  - from: "{{ orderer_dir }}"
+    to: "{{ local_orderer_org }}/orderers"
+  - from: "{{ orderer_org }}/tlsca/tlsca.{{ domain }}-cert.pem"
+    to: "{{ local_orderer_dir }}/tlsca"
+  - from: "{{ orderer_dir }}/tls"
+    to: "{{ local_orderer_dir }}"

@@ -1,0 +1,6 @@
+---
+- hosts: nodes
+  become: true
+
+  roles:
+    - install-dependencies
