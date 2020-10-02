@@ -7,6 +7,8 @@
   loop:
     - npm
     - python3-pip
+    - python-setuptools
+    - ssh-askpass
   when: ansible_os_family == 'Debian'
 
 - name: Install common packages
@@ -22,6 +24,7 @@
 
 - name: Upgrade pip
   shell: "python -m pip install --upgrade pip"
+  when: ansible_os_family == 'RedHat'
 
 - pip:
     name: "{{ item }}"
