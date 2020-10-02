@@ -1,6 +1,6 @@
 ---
-- name: Install docker
-  include_tasks: install-docker.yaml
+#- name: Install docker
+#  include_tasks: install-docker.yaml
 
 - name: Install common deps
   include_tasks: install-common.yml
