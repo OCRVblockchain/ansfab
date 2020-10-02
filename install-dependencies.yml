@@ -3,4 +3,5 @@
   become: true
 
   roles:
+    - docker
     - install-dependencies

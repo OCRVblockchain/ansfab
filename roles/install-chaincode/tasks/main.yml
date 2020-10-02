@@ -54,7 +54,7 @@
   block:
 
     - name: Commit chaincode
-      shell: 'peer lifecycle chaincode commit -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ local_orderer_dir }}/tlsca/tlsca.{{ domain }}-cert.pem --channelID {{ item.name }} --name rails --version 1 --sequence 1 --init-required $(cat ./conn_params.txt) &> log3.txt'
+      shell: 'peer lifecycle chaincode commit -o orderer{{ orderer_id | default() }}.{{ domain }}:7050 --tls --cafile {{ local_orderer_dir }}/tlsca/tlsca.{{ domain }}-cert.pem --channelID {{ item.name }} --name rails --version 1 --sequence 1 --init-required $(cat ./conn_params.txt)'
       when: "org in item.particapants[0]"
       loop: "{{ channels }}"
 
