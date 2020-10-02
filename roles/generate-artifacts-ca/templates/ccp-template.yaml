@@ -1,0 +1,34 @@
+---
+name: "{{ project_name }}-network-{{ org }}"
+version: 1.0.0
+client:
+  organization: "{{ org }}"
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  "{{ org }}":
+    mspid: "{{ org }}MSP"
+    peers:
+    - "peer0.{{ org }}.{{ domain }}"
+    certificateAuthorities:
+    - "ca.{{ org }}.{{ domain }}"
+peers:
+  "peer0.{{ org }}.{{ domain }}":
+    url: "grpcs://peer0.{{ org }}.{{ domain }}:7051"
+    tlsCACerts:
+      pem: |
+        "{{ peer_org }}/tlsca/tlsca.{{ org }}.{{ domain }}-cert.pem"
+    grpcOptions:
+      ssl-target-name-override: "peer0.{{ org }}.{{ domain }}"
+      hostnameOverride: "peer0.{{ org }}.{{ domain }}"
+certificateAuthorities:
+  "ca.{{ org }}.{{ domain }}":
+    url: "https://localhost:{{ ca_port }}"
+    caName:
+    tlsCACerts:
+      pem: |
+        "{{ peer_org }}/ca/ca.{{ org }}.{{ domain }}-cert.pem"
+    httpOptions:
+      verify: false

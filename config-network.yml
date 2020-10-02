@@ -1,4 +1,10 @@
 ---
+- hosts: all
+  become: true
+
+  roles:
+    - prepare-network
+
 - hosts: nodes
   become: true
 

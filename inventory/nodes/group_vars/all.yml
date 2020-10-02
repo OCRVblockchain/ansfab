@@ -1,5 +1,6 @@
 ---
 project_name: "example"
+domain: example.dev
 
 # Default HL fabric ports
 orderer_port: 7050

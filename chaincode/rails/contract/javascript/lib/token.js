@@ -1,45 +1,28 @@
-/*
-SPDX-License-Identifier: Apache-2.0
-*/
-
 'use strict';
 
-// Utility class for ledger state
 const State = require('../ledger-api/state.js');
 
-// Enumerate commercial paper state values
-// const cpState = {
-//     ISSUED: 1,
-//     TRADING: 2,
-//     REDEEMED: 3
-// };
-
-/**
- * CommercialPaper class extends State class
- * Class will be used by application and smart contract to define a paper
- */
 class Token extends State {
-
     constructor(obj) {
-        super(Token.getClass(), [obj.id]);
+        super(Token.getClass(), [obj.objectType, obj.id]);
         Object.assign(this, obj);
     }
 
-    /**
-     * Basic getters and setters
-     */
+    getObjectType() {
+      return this.objectType;
+    }
+
     getId() {
-        return this.id;
+      return this.id;
     }
 
     getPayload() {
-        return this.payload;
+      return this.payload;
     }
 
     setPayload(newPayload) {
-        this.payload = newPayload;
+      this.payload = newPayload;
     }
-
 
     // getIssuer() {
     //     return this.issuer;
@@ -103,8 +86,8 @@ class Token extends State {
     /**
      * Factory method to create a Token object
      */
-    static createInstance(id, payload) {
-        return new Token({ id, payload });
+    static createInstance(objectType, id, payload) {
+        return new Token({ objectType, id, payload });
     }
 
     static getClass() {

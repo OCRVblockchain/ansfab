@@ -24,7 +24,7 @@
     },
     "peers": {
         "peer0.{{ org }}.{{ domain }}": {
-            "url": "grpcs://localhost:{{ peer0_port }}",
+            "url": "grpcs://31.184.253.134:{{ peer0_port }}",
             "tlsCACerts": {
                 "pem": "{{ peer_pem.stdout }}"
             },
@@ -36,7 +36,7 @@
     },
     "certificateAuthorities": {
         "ca.{{ org }}.{{ domain }}": {
-            "url": "https://localhost:{{ ca_port }}",
+            "url": "https://31.184.253.134:{{ ca_port }}",
             "caName": "",
             "tlsCACerts": {
                     "pem": "{{ ca_pem.stdout }}"

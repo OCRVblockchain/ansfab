@@ -1,12 +1,23 @@
-# AnsFab
+# Ansible Fabric
 Ansible-based utility for easy Hyperledger Fabric deployment
+
+# Quick overview:
+* Hyperledger Fabric v2.0
+* Generating crypto materials on Fabric CA
+* TLS on all nodes
+* Raft consensus
+* CouchDB or LevelDB database
+* Configurable amount of organizations and channels
 
 ## Technical requirements:
 Your machine should have:
 * GNU/Linux or MacOS operating system
 * Ansible 2.5.0+ 
 
-## Ports, used by default, you probably want to whitelist them in your firewall.
+Provisioned nodes by ansible should have:
+* Ubuntu 16.04
+* python
+* sudo access
 
 ### Ports, needed for blockchain instances to communicate with each other:
 
@@ -14,6 +25,8 @@ Your machine should have:
 * **7054** - Hyperledger fabric CA port
 * **7051** - Hyperledger fabric peer port
 * **22** - ssh, or any other port number, needed for inital ansible deployment only
+
+Ports, used by default, you probably want to whitelist them in your firewall.
 
 If you are deploying for the first time, run:
 ```sudo ansible-playbook -i inventory/nodes install-dependencies.yml```
