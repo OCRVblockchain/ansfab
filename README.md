@@ -15,7 +15,7 @@ Your machine should have:
 * Ansible 2.5.0+ 
 
 Provisioned nodes by ansible should have:
-* Ubuntu 16.04
+* Ubuntu 16.04 or Debian
 * python
 * sudo access
 
