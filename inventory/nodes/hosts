@@ -1,9 +1,9 @@
 localhost ansible_ssh_user=deniskozlov ansible_ssh_pass=joo0shaij ansible_become_pass=joo0shaij
 
-[vscale]
-org0.example.dev ansible_ssh_user=user ansible_ssh_pass=qazwsxedc ansible_become_pass=qazwsxedc
-org1.example.dev ansible_ssh_user=user ansible_ssh_pass=qazwsxedc ansible_become_pass=qazwsxedc
-org2.example.dev ansible_ssh_user=user ansible_ssh_pass=qazwsxedc ansible_become_pass=qazwsxedc
+[cloud]
+rzd.rails.rzd ansible_ssh_user=user ansible_ssh_pass=Rtnjdf1rtnjdf2 ansible_become_pass=Rtnjdf1rtnjdf2
+hmk.rails.rzd ansible_ssh_user=user ansible_ssh_pass=Rtnjdf1rtnjdf2 ansible_become_pass=Rtnjdf1rtnjdf2
+rspm.rails.rzd ansible_ssh_user=user ansible_ssh_pass=Rtnjdf1rtnjdf2 ansible_become_pass=Rtnjdf1rtnjdf2
 
 [nodes:children]
-vscale
+cloud

@@ -13,6 +13,8 @@
     remove_volumes: yes
     #remove_orphans: yes
     state: absent
+  vars:
+    ansible_python_interpreter: /bin/python3
 
 - name: Start Peer container
   docker_compose:
@@ -20,3 +22,5 @@
     files:
       - "docker-compose-peer-{{ org }}.yaml"
     state: present
+  vars:
+    ansible_python_interpreter: /bin/python3

@@ -25,7 +25,7 @@ peers:
       hostnameOverride: "peer0.{{ org }}.{{ domain }}"
 certificateAuthorities:
   "ca.{{ org }}.{{ domain }}":
-    url: "https://localhost:{{ ca_port }}"
+    url: "https://ca.{{ org }}.{{ domain }}:{{ ca_port }}"
     caName:
     tlsCACerts:
       pem: |

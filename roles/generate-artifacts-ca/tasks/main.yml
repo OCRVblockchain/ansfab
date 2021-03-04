@@ -19,6 +19,8 @@
     remove_volumes: yes
     remove_orphans: yes
     state: absent
+  vars:
+    ansible_python_interpreter: /bin/python3
 
 - name: Start CA container
   docker_compose:
@@ -26,6 +28,8 @@
     files:
       - "docker-compose-ca-{{ org }}.yaml"
     state: present
+  vars:
+    ansible_python_interpreter: /bin/python3
 
 # TODO: it might be worth using a docker module
 - name: Copy artifacts from CA
@@ -37,30 +41,30 @@
     # Register identites:
 
     - name: Enroll the CA admin
-      shell: "fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 {{ with_tls_cert }}"
+      shell: "fabric-ca-client enroll -u https://admin:adminpw@ca.{{ org }}.{{ domain }}:7054 {{ with_tls_cert }}"
 
     - name: Register the org admin
-      shell: "fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://localhost:7054 {{ with_tls_cert }}"
+      shell: "fabric-ca-client register --id.name {{ org }}admin --id.secret adminpw --id.type admin -u https://ca.{{ org }}.{{ domain }}:7054 {{ with_tls_cert }}"
 
     - name: Register peer0
-      shell: "fabric-ca-client register --id.name peer0 --id.secret peerpw --id.type peer -u https://localhost:7054 {{ with_tls_cert }}"
+      shell: "fabric-ca-client register --id.name peer0 --id.secret peerpw --id.type peer -u https://ca.{{ org }}.{{ domain }}:7054 {{ with_tls_cert }}"
 
     - name: Register orderer
-      shell: "fabric-ca-client register --id.name orderer --id.secret ordererpw --id.type orderer -u https://localhost:7054 {{ with_tls_cert }}"
+      shell: "fabric-ca-client register --id.name orderer --id.secret ordererpw --id.type orderer -u https://ca.{{ org }}.{{ domain }}:7054 {{ with_tls_cert }}"
 
     - name: Register the orderer admin
-      shell: "fabric-ca-client register --id.name ordererAdmin --id.secret ordereradminpw --id.type admin -u https://localhost:7054 {{ with_tls_cert }}"
+      shell: "fabric-ca-client register --id.name ordererAdmin --id.secret ordereradminpw --id.type admin -u https://ca.{{ org }}.{{ domain }}:7054 {{ with_tls_cert }}"
 
     # Generate peer artifacts:
 
     - name: Enroll the org admin
-      shell: "fabric-ca-client enroll -u https://{{ org }}admin:adminpw@localhost:7054 -M {{ admin_dir }}/msp {{ with_tls_cert }}"
+      shell: "fabric-ca-client enroll -u https://{{ org }}admin:adminpw@ca.{{ org }}.{{ domain }}:7054 -M {{ admin_dir }}/msp {{ with_tls_cert }}"
 
     - name: Enroll the peer0
-      shell: "fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts peer0.{{ org }}.{{ domain }} -M {{ peer_dir }}/msp {{ with_tls_cert }}"
+      shell: "fabric-ca-client enroll -u https://peer0:peerpw@ca.{{ org }}.{{ domain }}:7054 --csr.hosts peer0.{{ org }}.{{ domain }} -M {{ peer_dir }}/msp {{ with_tls_cert }}"
 
     - name: Enroll the peer0 TLS
-      shell: "fabric-ca-client enroll -u https://peer0:peerpw@localhost:7054 --csr.hosts peer0.{{ org }}.{{ domain }} --enrollment.profile tls -M {{ peer_dir }}/tls {{ with_tls_cert }}"
+      shell: "fabric-ca-client enroll -u https://peer0:peerpw@ca.{{ org }}.{{ domain }}:7054 --csr.hosts peer0.{{ org }}.{{ domain }} --enrollment.profile tls -M {{ peer_dir }}/tls {{ with_tls_cert }}"
 
     # Transfer peer artifacts to canonical Fabric paths
 
@@ -79,16 +83,16 @@
     # Generate orderer artifacts:
 
     - name: Enroll the CA admin
-      shell: " fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 {{ with_tls_cert }}"
+      shell: " fabric-ca-client enroll -u https://admin:adminpw@ca.{{ org }}.{{ domain }}:7054 {{ with_tls_cert }}"
 
     - name: Enroll the orderer
-      shell: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ domain }} -M {{ orderer_dir }}/msp {{ with_tls_cert }}"
+      shell: "export FABRIC_CA_CLIENT_HOME={{ registrar_orderer }} && fabric-ca-client enroll -u https://orderer:ordererpw@ca.{{ org }}.{{ domain }}:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ domain }} -M {{ orderer_dir }}/msp {{ with_tls_cert }}"
 
     - name: Enroll the orderer TLS
-      shell: "fabric-ca-client enroll -u https://orderer:ordererpw@localhost:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ domain }} -M {{ orderer_dir }}/tls --enrollment.profile tls {{ with_tls_cert }}"
+      shell: "fabric-ca-client enroll -u https://orderer:ordererpw@ca.{{ org }}.{{ domain }}:7054 --csr.hosts orderer{{ orderer_id | default() }}.{{ domain }} -M {{ orderer_dir }}/tls --enrollment.profile tls {{ with_tls_cert }}"
 
     - name: Enroll the orderer admin
-      shell: "fabric-ca-client enroll -u https://ordererAdmin:ordereradminpw@localhost:7054  -M {{ admin_orderer_dir }}/msp {{ with_tls_cert }}"
+      shell: "fabric-ca-client enroll -u https://ordererAdmin:ordereradminpw@ca.{{ org }}.{{ domain }}:7054  -M {{ admin_orderer_dir }}/msp {{ with_tls_cert }}"
 
     # Transfer orderer artifacts to canonical Fabric paths
 

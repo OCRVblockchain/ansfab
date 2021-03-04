@@ -13,7 +13,6 @@
         mkdir $HOME/fabric-tools &&
         cd $HOME/fabric-tools &&
         curl -sSL https://bit.ly/2ysbOFE | bash -s &&
-        cd fabric-samples &&
         sudo cp bin/* /usr/bin"
   ignore_errors: true
   when: ansible_os_family == 'RedHat'

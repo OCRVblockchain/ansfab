@@ -1,11 +1,11 @@
 chaincode_lang: node # Programming language of chaincode
 chaincode_version: 1.0 # Your chaincode version
 channels:
-  - name: common # Channel name
+  - name: rails # Channel name
     particapants: # Organizations, should be included in channel
-      - org0
-      - org1
-      - org2
+      - rzd
+      - hmk
+      - rspm
     chaincode: # Chaincode params
       name: rails
       version: "{{ chaincode_version }}"

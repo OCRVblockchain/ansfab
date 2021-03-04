@@ -7,6 +7,8 @@ fabric_artifacts: "{{ fabric_starter_workdir }}/crypto-config"
 peer_org: "{{ fabric_artifacts }}/peerOrganizations/{{ org }}.{{ domain }}"
 peer_dir: "{{ peer_org }}/peers/peer0.{{ org }}.{{ domain }}"
 
+orderer_org: "{{ fabric_artifacts }}/ordererOrganizations/{{ domain }}"
+
 peer_templates:
   - from: "base.j2"
     to: "{{ docker_artifacts }}/base.yaml"

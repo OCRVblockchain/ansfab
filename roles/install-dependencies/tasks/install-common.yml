@@ -12,23 +12,19 @@
   when: ansible_os_family == 'Debian'
 
 - name: Install common packages
+  shell: "curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -"
+  when: ansible_os_family == 'RedHat'
+
+- name: Install common packages
   yum:
     name: "{{ item }}"
     state: latest
   loop:
-    - npm
-    - python-pip
+    - nodejs
+    - python3
     - python-setuptools
     - openssh-askpass
   when: ansible_os_family == 'RedHat'
 
-- name: Upgrade pip
-  shell: "python -m pip install --upgrade pip"
-  when: ansible_os_family == 'RedHat'
-
-- pip:
-    name: "{{ item }}"
-    state: latest
-  loop:
-    - docker
-    - docker-compose
+- name: Install docker, docker-compose via pip3
+  shell: "pip3 install docker docker-compose"

@@ -4,9 +4,9 @@ node_roles:
   - orderer
   - peer
   - ca
-org: org0 # Organization name
+org: rzd # Organization name
 orderer_id: 0
-ansible_host: 172.22.104.247 # Real ip address or domain name of the machine
-ansible_user: root  # User with sudo access
+ansible_host: 185.17.141.28 # Real ip address or domain name of the machine
+ansible_user: user  # User with sudo access
 ansible_private_key_file: ~/.ssh/id_rsa # Private key to identify ourselves
 ansible_ssh_port: 22 # Specify ssh-port here, if case of it's not defaulted.

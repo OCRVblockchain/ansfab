@@ -1,6 +1,6 @@
 ---
 project_name: "example"
-domain: example.dev
+domain: rails.rzd
 
 # Default HL fabric ports
 orderer_port: 7050

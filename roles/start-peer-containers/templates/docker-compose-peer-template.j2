@@ -16,11 +16,16 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.{{ org }}.{{ domain }}:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.{{ org }}.{{ domain }}:7051
       - CORE_PEER_LOCALMSPID={{ org }}MSP
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/peers/peer0.{{ org }}.{{ domain }}/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/users/Admin@{{ org }}.{{ domain }}/msp
+      - ORDERER_CA=/etc/hyperledger/crypto/orderer/rails.rzd/orderers/orderer0.{{ org }}.{{ domain }}/msp/tlscacerts/tlsca.{{ org }}.{{ domain }}-cert.pem
+      - CHANNEL_NAME=rails
     ports:
       - {{ peer0_port }}:7051
     volumes:
       - /var/run/:/host/var/run/
       - {{ peer_org }}:/etc/hyperledger/crypto/peer
+      - {{ orderer_org }}:/etc/hyperledger/crypto/orderer
       #- {{ peer_dir }}/tls:/etc/hyperledger/crypto/peer/tls
       #- peer0.{{ org }}.{{ domain }}:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer

@@ -301,11 +301,10 @@ csr:
     - C: US
       ST: "North Carolina"
       L: "Durham"
-      O: {{ org }}.{{ domain }}
+      O: ca.{{ org }}.{{ domain }}
       OU:
   hosts:
-    - localhost
-    - {{ org }}.{{ domain }}
+    - ca.{{ org }}.{{ domain }}
   ca:
     expiry: 131400h
     pathlength: 1

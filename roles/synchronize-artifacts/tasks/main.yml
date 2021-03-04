@@ -34,6 +34,11 @@
 
   when: "'orderer' in node_roles"
 
+- name: Grant permissions
+  shell: "sudo chmod -R 777 {{ item.from }}"
+  loop: "{{ files_to_rsync_peer }}"
+  when: "'peer' in node_roles"
+
 - name: Synchronize peer artifacts
   block:
 
@@ -48,6 +53,8 @@
         dest: "{{ item.to }}"
         mode: pull
         recursive: yes
+        rsync_path: "sudo rsync"
+      become: n
       loop: "{{ files_to_rsync_peer }}"
 
   when: "'peer' in node_roles"
